@@ -971,6 +971,8 @@ public class ClickGuiScreen extends Screen {
             } else {
                 renderProfileSetting(context, profileSetting, x, y, mouseX, mouseY, animationProgress);
             }
+        } else if (setting instanceof ButtonSetting buttonSetting) {
+            renderButtonSetting(context, buttonSetting, x, y, mouseX, mouseY, animationProgress);
         }
     }
 
@@ -1139,6 +1141,18 @@ public class ClickGuiScreen extends Screen {
     }
 
     private void renderExecuteButton(DrawContext context, BooleanSetting setting, int x, int y, int mouseX, int mouseY,
+            float animationProgress) {
+        boolean hovered = isHovered(mouseX, mouseY, x, y, panelWidth - 20, settingHeight);
+
+        int color = hovered ? cachedAccentColor : 0xFF555555;
+        drawRoundedRect(context, x, y, panelWidth - 20, settingHeight, 5,
+                RadiumGuiTheme.applyAlpha(color, animationProgress));
+
+        context.drawCenteredTextWithShadow(textRenderer, setting.getName(), x + (panelWidth - 20) / 2,
+                y + (settingHeight - 8) / 2, 0xFFFFFFFF);
+    }
+
+    private void renderButtonSetting(DrawContext context, ButtonSetting setting, int x, int y, int mouseX, int mouseY,
             float animationProgress) {
         boolean hovered = isHovered(mouseX, mouseY, x, y, panelWidth - 20, settingHeight);
 
@@ -1813,6 +1827,9 @@ public class ClickGuiScreen extends Screen {
                                     }
                                     profileSetting.setExpanded(false);
                                 }
+                            } else if (setting instanceof ButtonSetting buttonSetting) {
+                                buttonSetting.click();
+                                return true;
                             }
                         }
                     }

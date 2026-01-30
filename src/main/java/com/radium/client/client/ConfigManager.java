@@ -21,10 +21,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class ConfigManager {
     private JsonObject profile;
     private File configFile;
+    private String currentConfigName = "default";
 
     public ConfigManager() {
         if (RadiumClient.mc != null) {
@@ -32,8 +32,155 @@ public class ConfigManager {
             if (!radiumDir.exists()) {
                 radiumDir.mkdirs();
             }
+            // Create configs subdirectory for multi-config support
+            File configsDir = new File(radiumDir, "configs");
+            if (!configsDir.exists()) {
+                configsDir.mkdirs();
+            }
             configFile = new File(radiumDir, "config.json");
         }
+    }
+
+    private File getConfigsDir() {
+        if (RadiumClient.mc == null)
+            return null;
+        File radiumDir = new File(RadiumClient.mc.runDirectory, "radium");
+        File configsDir = new File(radiumDir, "configs");
+        if (!configsDir.exists()) {
+            configsDir.mkdirs();
+        }
+        return configsDir;
+    }
+
+    public String[] getConfigNames() {
+        File configsDir = getConfigsDir();
+        if (configsDir == null || !configsDir.exists()) {
+            return new String[] { "default" };
+        }
+        File[] files = configsDir.listFiles((dir, name) -> name.endsWith(".json"));
+        if (files == null || files.length == 0) {
+            return new String[] { "default" };
+        }
+        String[] names = new String[files.length];
+        for (int i = 0; i < files.length; i++) {
+            names[i] = files[i].getName().replace(".json", "");
+        }
+        java.util.Arrays.sort(names);
+        return names;
+    }
+
+    public void saveAs(String name) {
+        if (name == null || name.trim().isEmpty())
+            return;
+        name = name.trim().replaceAll("[^a-zA-Z0-9_-]", "_");
+
+        File configsDir = getConfigsDir();
+        if (configsDir == null)
+            return;
+
+        File targetFile = new File(configsDir, name + ".json");
+        try {
+            JsonObject configJson = buildConfigJson();
+            try (FileWriter writer = new FileWriter(targetFile)) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                gson.toJson(configJson, writer);
+            }
+            currentConfigName = name;
+
+            // Show toast notification
+            if (RadiumClient.getModuleManager() != null) {
+                com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.getModuleManager()
+                        .getModule(com.radium.client.modules.client.ClickGUI.class);
+                if (clickGUI != null && clickGUI.toastNotifications.getValue()) {
+                    com.radium.client.utils.ToastNotificationManager.getInstance().show(
+                            "Config Saved",
+                            "Saved as '" + name + "'",
+                            com.radium.client.utils.ToastNotification.ToastType.CONFIG_SAVE);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadConfig(String name) {
+        if (name == null || name.trim().isEmpty())
+            return;
+
+        File configsDir = getConfigsDir();
+        if (configsDir == null)
+            return;
+
+        File targetFile = new File(configsDir, name + ".json");
+        if (!targetFile.exists()) {
+            // Show toast notification that config doesn't exist
+            if (RadiumClient.getModuleManager() != null) {
+                com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.getModuleManager()
+                        .getModule(com.radium.client.modules.client.ClickGUI.class);
+                if (clickGUI != null && clickGUI.toastNotifications.getValue()) {
+                    com.radium.client.utils.ToastNotificationManager.getInstance().show(
+                            "Config Not Found",
+                            "Config '" + name + "' doesn't exist",
+                            com.radium.client.utils.ToastNotification.ToastType.INFO);
+                }
+            }
+            return;
+        }
+
+        try {
+            JsonObject loaded = loadJsonFromFile(targetFile.toPath());
+            if (loaded != null) {
+                profile = loaded;
+                applyProfileFromJson(loaded);
+                currentConfigName = name;
+
+                // Show toast notification
+                if (RadiumClient.getModuleManager() != null) {
+                    com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.getModuleManager()
+                            .getModule(com.radium.client.modules.client.ClickGUI.class);
+                    if (clickGUI != null && clickGUI.toastNotifications.getValue()) {
+                        com.radium.client.utils.ToastNotificationManager.getInstance().show(
+                                "Config Loaded",
+                                "Loaded '" + name + "'",
+                                com.radium.client.utils.ToastNotification.ToastType.CONFIG_LOAD);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteConfig(String name) {
+        if (name == null || name.trim().isEmpty())
+            return;
+        if ("default".equalsIgnoreCase(name))
+            return; // Prevent deleting default
+
+        File configsDir = getConfigsDir();
+        if (configsDir == null)
+            return;
+
+        File targetFile = new File(configsDir, name + ".json");
+        if (targetFile.exists()) {
+            targetFile.delete();
+
+            // Show toast notification
+            if (RadiumClient.getModuleManager() != null) {
+                com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.getModuleManager()
+                        .getModule(com.radium.client.modules.client.ClickGUI.class);
+                if (clickGUI != null && clickGUI.toastNotifications.getValue()) {
+                    com.radium.client.utils.ToastNotificationManager.getInstance().show(
+                            "Config Deleted",
+                            "Deleted '" + name + "'",
+                            com.radium.client.utils.ToastNotification.ToastType.INFO);
+                }
+            }
+        }
+    }
+
+    public String getCurrentConfigName() {
+        return currentConfigName;
     }
 
     private File getConfigFile() {
@@ -62,13 +209,13 @@ public class ConfigManager {
 
                 // Show toast notification for config load
                 if (RadiumClient.getModuleManager() != null) {
-                    com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.getModuleManager().getModule(com.radium.client.modules.client.ClickGUI.class);
+                    com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.getModuleManager()
+                            .getModule(com.radium.client.modules.client.ClickGUI.class);
                     if (clickGUI != null && clickGUI.toastNotifications.getValue()) {
                         com.radium.client.utils.ToastNotificationManager.getInstance().show(
                                 "Config Loaded",
                                 "Profile loaded successfully",
-                                com.radium.client.utils.ToastNotification.ToastType.CONFIG_LOAD
-                        );
+                                com.radium.client.utils.ToastNotification.ToastType.CONFIG_LOAD);
                     }
                 }
             } else {
@@ -96,7 +243,8 @@ public class ConfigManager {
             for (Module module : RadiumClient.moduleManager.getModules()) {
                 if (modulesJson.has(module.getName())) {
                     boolean enabled = modulesJson.get(module.getName()).getAsBoolean();
-                    if (enabled != module.isEnabled()) module.toggle();
+                    if (enabled != module.isEnabled())
+                        module.toggle();
                     hadModules = true;
                 }
             }
@@ -134,7 +282,8 @@ public class ConfigManager {
 
         if (!hadModules || !hadKeybinds || !hadSettings) {
             for (Module module : RadiumClient.moduleManager.getModules()) {
-                if (module.isEnabled()) module.toggle();
+                if (module.isEnabled())
+                    module.toggle();
                 module.setKeyBind(-1);
             }
 
@@ -149,8 +298,8 @@ public class ConfigManager {
         try {
             profile = buildConfigJson();
             File file = getConfigFile();
-            if (file == null) return;
-
+            if (file == null)
+                return;
 
             File parent = file.getParentFile();
             if (parent != null && !parent.exists()) {
@@ -163,13 +312,13 @@ public class ConfigManager {
 
                 // Show toast notification for config save (after successful save)
                 if (RadiumClient.getModuleManager() != null) {
-                    com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.getModuleManager().getModule(com.radium.client.modules.client.ClickGUI.class);
+                    com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.getModuleManager()
+                            .getModule(com.radium.client.modules.client.ClickGUI.class);
                     if (clickGUI != null && clickGUI.toastNotifications.getValue()) {
                         com.radium.client.utils.ToastNotificationManager.getInstance().show(
                                 "Config Saved",
                                 "Profile saved successfully",
-                                com.radium.client.utils.ToastNotification.ToastType.CONFIG_SAVE
-                        );
+                                com.radium.client.utils.ToastNotification.ToastType.CONFIG_SAVE);
                     }
                 }
             }
@@ -245,7 +394,8 @@ public class ConfigManager {
                 for (Module module : RadiumClient.moduleManager.getModules()) {
                     if (modulesJson.has(module.getName())) {
                         boolean enabled = modulesJson.get(module.getName()).getAsBoolean();
-                        if (enabled != module.isEnabled()) module.toggle();
+                        if (enabled != module.isEnabled())
+                            module.toggle();
                         hadModules = true;
                     }
                 }
@@ -283,7 +433,8 @@ public class ConfigManager {
 
             if (!hadModules || !hadKeybinds || !hadSettings) {
                 for (Module module : RadiumClient.moduleManager.getModules()) {
-                    if (module.isEnabled()) module.toggle();
+                    if (module.isEnabled())
+                        module.toggle();
                     module.setKeyBind(-1);
                 }
 
@@ -318,7 +469,6 @@ public class ConfigManager {
 
                     JsonObject enchObj = new JsonObject();
 
-
                     JsonArray vanillaArr = new JsonArray();
                     for (RegistryKey<Enchantment> enchKey : enchSetting.getEnchantments()) {
                         try {
@@ -328,13 +478,11 @@ public class ConfigManager {
                     }
                     enchObj.add("vanilla", vanillaArr);
 
-
                     JsonArray amethystArr = new JsonArray();
                     for (String name : enchSetting.getAmethystEnchants()) {
                         amethystArr.add(name);
                     }
                     enchObj.add("amethyst", amethystArr);
-
 
                     JsonObject metadataObj = new JsonObject();
                     JsonArray selectedArr = new JsonArray();
@@ -369,7 +517,8 @@ public class ConfigManager {
                 }
             }
 
-            if (!moduleSettings.isEmpty()) settingsJson.add(module.getName(), moduleSettings);
+            if (!moduleSettings.isEmpty())
+                settingsJson.add(module.getName(), moduleSettings);
         }
 
         return settingsJson;
@@ -377,11 +526,13 @@ public class ConfigManager {
 
     public void loadSettingsFromJson(JsonObject settingsJson) {
         for (Module module : RadiumClient.moduleManager.getModules()) {
-            if (!settingsJson.has(module.getName())) continue;
+            if (!settingsJson.has(module.getName()))
+                continue;
             JsonObject moduleSettings = settingsJson.getAsJsonObject(module.getName());
 
             for (Setting<?> setting : module.getSettings()) {
-                if (!moduleSettings.has(setting.getName())) continue;
+                if (!moduleSettings.has(setting.getName()))
+                    continue;
 
                 try {
                     if (setting instanceof BooleanSetting boolSetting) {
@@ -419,7 +570,6 @@ public class ConfigManager {
                             JsonObject enchObj = el.getAsJsonObject();
                             enchSetting.clear();
 
-
                             if (enchObj.has("vanilla") && enchObj.get("vanilla").isJsonArray()) {
                                 JsonArray vanillaArr = enchObj.getAsJsonArray("vanilla");
                                 for (JsonElement e : vanillaArr) {
@@ -432,7 +582,6 @@ public class ConfigManager {
                                     }
                                 }
                             }
-
 
                             List<String> amethystListForMetadata = new ArrayList<>();
                             if (enchObj.has("amethyst") && enchObj.get("amethyst").isJsonArray()) {
@@ -449,7 +598,6 @@ public class ConfigManager {
                                 }
                             }
 
-
                             if (enchObj.has("metadata") && enchObj.get("metadata").isJsonObject()) {
                                 JsonObject metadataObj = enchObj.getAsJsonObject("metadata");
                                 for (String key : metadataObj.keySet()) {
@@ -464,7 +612,6 @@ public class ConfigManager {
                                         }
 
                                         enchSetting.setMetadata(key, list);
-
 
                                         if ("selectedAmethystEnchants".equals(key)) {
                                             for (String s : list) {
@@ -488,7 +635,6 @@ public class ConfigManager {
                                     enchSetting.setMetadata("selectedAmethystEnchants", amethystListForMetadata);
                                 }
                             }
-
 
                             try {
                                 enchSetting.loadAmethystFromMetadata();
@@ -538,14 +684,14 @@ public class ConfigManager {
     }
 
     private JsonObject loadJsonFromFile(Path path) {
-        if (!Files.exists(path)) return null;
+        if (!Files.exists(path))
+            return null;
         try (Reader reader = new FileReader(path.toFile())) {
             return JsonParser.parseReader(reader).getAsJsonObject();
         } catch (Exception e) {
             return null;
         }
     }
-
 
     public void saveGuiPreference(String guiType) {
         if (profile == null) {
@@ -594,7 +740,8 @@ public class ConfigManager {
                 for (Setting<?> setting : mediaPlayer.getSettings()) {
                     if (setting instanceof NumberSetting numSetting) {
                         String name = setting.getName();
-                        if (name.equals("X") || name.equals("Y") || name.equals("Position X") || name.equals("Position Y")) {
+                        if (name.equals("X") || name.equals("Y") || name.equals("Position X")
+                                || name.equals("Position Y")) {
                             posJson.addProperty("MediaPlayer " + name, numSetting.getValue());
                         }
                     }
@@ -654,5 +801,3 @@ public class ConfigManager {
         }
     }
 }
-
-

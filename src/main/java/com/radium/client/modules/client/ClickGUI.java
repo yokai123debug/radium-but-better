@@ -1,11 +1,12 @@
 package com.radium.client.modules.client;
 
-
 import com.radium.client.client.RadiumClient;
 import com.radium.client.gui.ClickGuiScreen;
 import com.radium.client.gui.settings.BooleanSetting;
+import com.radium.client.gui.settings.ButtonSetting;
 import com.radium.client.gui.settings.ColorSetting;
 import com.radium.client.gui.settings.NumberSetting;
+import com.radium.client.gui.settings.StringSetting;
 import com.radium.client.modules.Module;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
@@ -19,13 +20,42 @@ public class ClickGUI extends Module {
     public final NumberSetting guiOpacity = new NumberSetting("GUI Opacity", 35.0, 0.0, 100.0, 5.0);
     private final ColorSetting primaryColor = new ColorSetting("Primary Color", new Color(255, 68, 68));
     private final ColorSetting secondaryColor = new ColorSetting("Secondary Color", new Color(204, 34, 34));
+
+    // Config management
+    public final StringSetting configName = new StringSetting("Config Name", "default");
+    public final ButtonSetting saveConfig = new ButtonSetting("Save Config", () -> {
+        if (RadiumClient.getConfigManager() != null) {
+            String name = configName.getValue();
+            if (name != null && !name.trim().isEmpty()) {
+                RadiumClient.getConfigManager().saveAs(name.trim());
+            }
+        }
+    });
+    public final ButtonSetting loadConfig = new ButtonSetting("Load Config", () -> {
+        if (RadiumClient.getConfigManager() != null) {
+            String name = configName.getValue();
+            if (name != null && !name.trim().isEmpty()) {
+                RadiumClient.getConfigManager().loadConfig(name.trim());
+            }
+        }
+    });
+    public final ButtonSetting deleteConfig = new ButtonSetting("Delete Config", () -> {
+        if (RadiumClient.getConfigManager() != null) {
+            String name = configName.getValue();
+            if (name != null && !name.trim().isEmpty() && !"default".equalsIgnoreCase(name.trim())) {
+                RadiumClient.getConfigManager().deleteConfig(name.trim());
+            }
+        }
+    });
+
     public Screen currentGuiScreen;
     private ClickGuiScreen defaultGuiScreen;
 
     public ClickGUI() {
         super("Radium", "The Gui", Category.CLIENT);
         setKeyBind(GLFW.GLFW_KEY_RIGHT_SHIFT);
-        addSettings(primaryColor, secondaryColor, icons, toastNotifications, guiOpacity);
+        addSettings(primaryColor, secondaryColor, icons, toastNotifications, guiOpacity,
+                configName, saveConfig, loadConfig, deleteConfig);
         RadiumClient.sendKeepAliveIfAllowed();
     }
 
@@ -71,7 +101,6 @@ public class ClickGUI extends Module {
         });
     }
 
-
     public void updateGuiScreen() {
         if (defaultGuiScreen == null) {
             defaultGuiScreen = new ClickGuiScreen();
@@ -101,4 +130,3 @@ public class ClickGUI extends Module {
         }
     }
 }
-

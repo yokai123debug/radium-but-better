@@ -8,12 +8,15 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
-
 public class HudEditorScreen extends Screen {
     private static final double SIDE_SNAP_THRESHOLD = 5.0;
     private static final double CENTER_SNAP_THRESHOLD = 5.0;
     private final HUD hudModule;
     private String draggingElement = null;
+    private String selectedElement = null;
+    private String resizingElement = null;
+    private double resizeStartY = 0;
+    private double resizeStartScale = 1.0;
     private int dragOffsetX = 0;
     private int dragOffsetY = 0;
     private boolean snapToGrid = true;
@@ -156,7 +159,7 @@ public class HudEditorScreen extends Screen {
                 drawPreviewTargetHUD(context);
             }
 
-            drawElementOutlines(context, draggingElement);
+            drawElementOutlines(context, draggingElement, selectedElement);
         }
 
         if (mediaPlayerModule != null && mediaPlayerModule.isEnabled()) {
@@ -195,7 +198,8 @@ public class HudEditorScreen extends Screen {
         int scaledBoxY = scaledCenterY - 15;
 
         context.fill(scaledBoxX, scaledBoxY, scaledBoxX + scaledBoxWidth, scaledBoxY + scaledBoxHeight, 0xE6131A2E);
-        context.drawCenteredTextWithShadow(this.textRenderer, scaledInstructionText, scaledCenterX, scaledBoxY + 4, 0xFFB0B8C8);
+        context.drawCenteredTextWithShadow(this.textRenderer, scaledInstructionText, scaledCenterX, scaledBoxY + 4,
+                0xFFB0B8C8);
 
         String scaledGridText = "Grid(G): " + (snapToGrid ? "ON" : "OFF");
         int scaledGridWidth = this.textRenderer.getWidth(scaledGridText);
@@ -203,8 +207,10 @@ public class HudEditorScreen extends Screen {
         int scaledGridBoxX = scaledCenterX - (scaledGridBoxWidth / 2);
         int scaledGridBoxY = scaledCenterY + 5;
 
-        context.fill(scaledGridBoxX, scaledGridBoxY, scaledGridBoxX + scaledGridBoxWidth, scaledGridBoxY + scaledBoxHeight, 0xE6131A2E);
-        context.drawCenteredTextWithShadow(this.textRenderer, scaledGridText, scaledCenterX, scaledGridBoxY + 4, 0xFFB0B8C8);
+        context.fill(scaledGridBoxX, scaledGridBoxY, scaledGridBoxX + scaledGridBoxWidth,
+                scaledGridBoxY + scaledBoxHeight, 0xE6131A2E);
+        context.drawCenteredTextWithShadow(this.textRenderer, scaledGridText, scaledCenterX, scaledGridBoxY + 4,
+                0xFFB0B8C8);
     }
 
     private void drawGrid(DrawContext context) {
@@ -299,7 +305,7 @@ public class HudEditorScreen extends Screen {
             return 0;
 
         var clickGUI = RadiumClient.moduleManager.getModule(com.radium.client.modules.client.ClickGUI.class);
-        
+
         int textHeight = mc.textRenderer.fontHeight * 2;
         int boxPadding = 8;
         int barWidth = 4;
@@ -434,9 +440,11 @@ public class HudEditorScreen extends Screen {
                 }
             }
             case "mediaPlayer": {
-                if (mediaPlayerModule == null) return 280;
+                if (mediaPlayerModule == null)
+                    return 280;
                 if (mediaPlayerModule.getSettings().stream().anyMatch(s -> s.getName().equals("Width"))) {
-                    return ((com.radium.client.gui.settings.NumberSetting) mediaPlayerModule.getSettings().stream().filter(s -> s.getName().equals("Width")).findFirst().get()).getValue().intValue();
+                    return ((com.radium.client.gui.settings.NumberSetting) mediaPlayerModule.getSettings().stream()
+                            .filter(s -> s.getName().equals("Width")).findFirst().get()).getValue().intValue();
                 }
                 return 280;
             }
@@ -466,16 +474,21 @@ public class HudEditorScreen extends Screen {
                 return textHeight + (boxPadding * 2);
             case "infoLines": {
                 int lines = 0;
-                if (hudModule.showFPS.getValue()) lines++;
-                if (hudModule.showPing.getValue()) lines++;
-                if (hudModule.showServerIP.getValue()) lines++;
-                if (lines == 0) return 0;
+                if (hudModule.showFPS.getValue())
+                    lines++;
+                if (hudModule.showPing.getValue())
+                    lines++;
+                if (hudModule.showServerIP.getValue())
+                    lines++;
+                if (lines == 0)
+                    return 0;
                 return (textHeight * lines) + (itemPadding * (lines - 1)) + (boxPadding * 2);
             }
             case "keybinds": {
                 int count = (int) com.radium.client.client.RadiumClient.moduleManager.getModules().stream()
                         .filter(m -> m.getKeyBind() != -1 && !m.getName().equals("Radium")).count();
-                if (count == 0) return 0;
+                if (count == 0)
+                    return 0;
                 return (textHeight * (count + 1)) + (itemPadding * count) + (boxPadding * 2) + 4;
             }
             case "targetHUD":
@@ -483,16 +496,19 @@ public class HudEditorScreen extends Screen {
             case "moduleList": {
                 int count = (int) com.radium.client.client.RadiumClient.moduleManager.getModules().stream()
                         .filter(com.radium.client.modules.Module::isEnabled)
-                        .filter(m -> !(m instanceof com.radium.client.modules.client.ClickGUI || m instanceof com.radium.client.modules.client.HUD))
+                        .filter(m -> !(m instanceof com.radium.client.modules.client.ClickGUI
+                                || m instanceof com.radium.client.modules.client.HUD))
                         .count();
-                if (count == 0) return 0;
+                if (count == 0)
+                    return 0;
                 int moduleItemPadding = 4;
                 int itemHeight = textHeight + (moduleItemPadding * 2);
                 return (itemHeight + 4) * count;
             }
             case "regionMap": {
                 int cellSize = hudModule.regionMapCellSize.getValue().intValue();
-                return hudModule.getRegionMapComponent().getHeight(cellSize, hudModule.regionMapShowCoords.getValue(), hudModule.regionMapShowLabels.getValue());
+                return hudModule.getRegionMapComponent().getHeight(cellSize, hudModule.regionMapShowCoords.getValue(),
+                        hudModule.regionMapShowLabels.getValue());
             }
             case "mediaPlayer": {
                 int artSize = 64;
@@ -532,21 +548,24 @@ public class HudEditorScreen extends Screen {
         int targetXPos = tempTargetHUDX;
         int targetYPos = tempTargetHUDY;
 
-        int boxX = hudModule.getTargetHUDCentered().getValue() ?
-                (mc.getWindow().getWidth() / 2) - (boxWidth / 2) : targetXPos;
+        int boxX = hudModule.getTargetHUDCentered().getValue() ? (mc.getWindow().getWidth() / 2) - (boxWidth / 2)
+                : targetXPos;
 
         com.radium.client.utils.render.RenderUtils.unscaledProjection();
 
         int spotiplayBgColor = 0xFF131A2E;
-        com.radium.client.utils.render.RenderUtils.fillRoundRect(context, boxX, targetYPos, boxWidth, boxHeight, 8, spotiplayBgColor);
+        com.radium.client.utils.render.RenderUtils.fillRoundRect(context, boxX, targetYPos, boxWidth, boxHeight, 8,
+                spotiplayBgColor);
 
         int headX = boxX + padding;
         int headY = targetYPos + padding;
         try {
             net.minecraft.client.util.SkinTextures skinTextures = mc.player.getSkinTextures();
-            com.radium.client.utils.render.RenderUtils.drawRoundedPlayerHead(context, skinTextures, headX, headY, headSize, 4);
+            com.radium.client.utils.render.RenderUtils.drawRoundedPlayerHead(context, skinTextures, headX, headY,
+                    headSize, 4);
         } catch (Exception e) {
-            com.radium.client.utils.render.RenderUtils.fillRoundRect(context, headX, headY, headSize, headSize, 4, 0xFF1A2235);
+            com.radium.client.utils.render.RenderUtils.fillRoundRect(context, headX, headY, headSize, headSize, 4,
+                    0xFF1A2235);
         }
 
         int textX = headX + headSize + padding;
@@ -559,12 +578,14 @@ public class HudEditorScreen extends Screen {
         context.drawText(RadiumClient.mc.textRenderer, healthText, textX, healthTextY, 0xFFFFFFFF, false);
 
         int healthBarBgColor = 0xFF2A3548;
-        com.radium.client.utils.render.RenderUtils.fillRoundRect(context, textX, healthBarY, healthBarWidth, healthBarHeight, 2, healthBarBgColor);
+        com.radium.client.utils.render.RenderUtils.fillRoundRect(context, textX, healthBarY, healthBarWidth,
+                healthBarHeight, 2, healthBarBgColor);
 
         int healthBarFillWidth = (int) (healthBarWidth * healthPercent);
         if (healthBarFillWidth > 0) {
             int healthColor = 0xFF1DB954;
-            com.radium.client.utils.render.RenderUtils.fillRoundRect(context, textX, healthBarY, healthBarFillWidth, healthBarHeight, 2, healthColor);
+            com.radium.client.utils.render.RenderUtils.fillRoundRect(context, textX, healthBarY, healthBarFillWidth,
+                    healthBarHeight, 2, healthColor);
         }
 
         com.radium.client.utils.render.RenderUtils.scaledProjection();
@@ -600,7 +621,7 @@ public class HudEditorScreen extends Screen {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    private void drawElementOutlines(DrawContext context, String dragging) {
+    private void drawElementOutlines(DrawContext context, String dragging, String selected) {
         if (hudModule == null)
             return;
 
@@ -630,7 +651,7 @@ public class HudEditorScreen extends Screen {
             int boxHeight = textHeight + (boxPadding * 2);
 
             hudModule.drawEditOutline(context, tempWatermarkX, tempWatermarkY, boxWidth, boxHeight,
-                    "watermark".equals(dragging));
+                    "watermark".equals(dragging), "watermark".equals(selected));
         }
 
         if ((hudModule.showFPS.getValue() || hudModule.showPing.getValue() || hudModule.showServerIP.getValue())
@@ -659,7 +680,7 @@ public class HudEditorScreen extends Screen {
             int boxWidth = maxWidth + (boxPadding * 2) + barWidth;
             int boxHeight = (textHeight * infoLines.size()) + (itemPadding * (infoLines.size() - 1)) + (boxPadding * 2);
             hudModule.drawEditOutline(context, tempInfoLinesX, tempInfoLinesY, boxWidth, boxHeight,
-                    "infoLines".equals(dragging));
+                    "infoLines".equals(dragging), "infoLines".equals(selected));
         }
 
         if (hudModule.showKeybinds.getValue() && tempKeybindsX >= 0 && tempKeybindsY >= 0) {
@@ -688,7 +709,7 @@ public class HudEditorScreen extends Screen {
                 int boxHeight = (textHeight * (modulesWithKeybinds.size() + 1))
                         + (itemPadding * modulesWithKeybinds.size()) + (boxPadding * 2) + 4;
                 hudModule.drawEditOutline(context, tempKeybindsX, tempKeybindsY, boxWidth, boxHeight,
-                        "keybinds".equals(dragging));
+                        "keybinds".equals(dragging), "keybinds".equals(selected));
             }
         }
 
@@ -704,7 +725,7 @@ public class HudEditorScreen extends Screen {
                 int boxWidth = width + (boxPadding * 2) + barWidth;
                 int boxHeight = textHeight + (boxPadding * 2);
                 hudModule.drawEditOutline(context, tempCoordinatesX, tempCoordinatesY, boxWidth, boxHeight,
-                        "coordinates".equals(dragging));
+                        "coordinates".equals(dragging), "coordinates".equals(selected));
             }
         }
 
@@ -724,14 +745,14 @@ public class HudEditorScreen extends Screen {
             int boxWidth = width + (boxPadding * 2) + barWidth;
             int boxHeight = textHeight + (boxPadding * 2);
             hudModule.drawEditOutline(context, tempTotemsX, tempTotemsY, boxWidth, boxHeight,
-                    "totems".equals(dragging));
+                    "totems".equals(dragging), "totems".equals(selected));
         }
 
         if (hudModule.showTargetHUD.getValue() && tempTargetHUDX >= 0 && tempTargetHUDY >= 0) {
             int boxWidth = 250;
             int boxHeight = 80;
             hudModule.drawEditOutline(context, tempTargetHUDX, tempTargetHUDY, boxWidth, boxHeight,
-                    "targetHUD".equals(dragging));
+                    "targetHUD".equals(dragging), "targetHUD".equals(selected));
         }
 
         if (hudModule.showModuleList.getValue() && tempModuleListX >= 0 && tempModuleListY >= 0) {
@@ -809,10 +830,9 @@ public class HudEditorScreen extends Screen {
                 int outlineHeight = moduleListMaxY - moduleListMinY;
 
                 hudModule.drawEditOutline(context, outlineX, moduleListMinY, outlineWidth, outlineHeight,
-                        "moduleList".equals(dragging));
+                        "moduleList".equals(dragging), "moduleList".equals(selected));
             }
         }
-
 
         if (hudModule.showRegionMap.getValue()) {
             int cellSize = hudModule.regionMapCellSize.getValue().intValue();
@@ -820,19 +840,21 @@ public class HudEditorScreen extends Screen {
             int height = hudModule.getRegionMapComponent().getHeight(cellSize, hudModule.regionMapShowCoords.getValue(),
                     hudModule.regionMapShowLabels.getValue());
             hudModule.drawEditOutline(context, tempRegionMapX, tempRegionMapY, width, height,
-                    "regionMap".equals(dragging));
+                    "regionMap".equals(dragging), "regionMap".equals(selected));
         }
 
-        if (mediaPlayerModule != null && mediaPlayerModule.isEnabled() && tempMediaPlayerX >= 0 && tempMediaPlayerY >= 0) {
+        if (mediaPlayerModule != null && mediaPlayerModule.isEnabled() && tempMediaPlayerX >= 0
+                && tempMediaPlayerY >= 0) {
             int mpWidth = 280;
             if (mediaPlayerModule.getSettings().stream().anyMatch(s -> s.getName().equals("Width"))) {
-                mpWidth = ((com.radium.client.gui.settings.NumberSetting) mediaPlayerModule.getSettings().stream().filter(s -> s.getName().equals("Width")).findFirst().get()).getValue().intValue();
+                mpWidth = ((com.radium.client.gui.settings.NumberSetting) mediaPlayerModule.getSettings().stream()
+                        .filter(s -> s.getName().equals("Width")).findFirst().get()).getValue().intValue();
             }
             int artSize = 64;
             int padding = 12;
             int mpHeight = artSize + padding * 2 + 8;
             hudModule.drawEditOutline(context, tempMediaPlayerX, tempMediaPlayerY, mpWidth, mpHeight,
-                    "mediaPlayer".equals(dragging));
+                    "mediaPlayer".equals(dragging), "mediaPlayer".equals(selected));
         }
 
         com.radium.client.utils.render.RenderUtils.scaledProjection();
@@ -866,24 +888,39 @@ public class HudEditorScreen extends Screen {
             if (draggingElement == null && mediaPlayerModule != null && mediaPlayerModule.isEnabled()) {
                 int mpWidth = 280;
                 if (mediaPlayerModule.getSettings().stream().anyMatch(s -> s.getName().equals("Width"))) {
-                    mpWidth = ((com.radium.client.gui.settings.NumberSetting) mediaPlayerModule.getSettings().stream().filter(s -> s.getName().equals("Width")).findFirst().get()).getValue().intValue();
+                    mpWidth = ((com.radium.client.gui.settings.NumberSetting) mediaPlayerModule.getSettings().stream()
+                            .filter(s -> s.getName().equals("Width")).findFirst().get()).getValue().intValue();
                 }
                 int artSize = 64;
                 int padding = 12;
                 int mpHeight = artSize + padding * 2 + 8;
 
                 if ((int) unscaledMouseX >= tempMediaPlayerX && (int) unscaledMouseX <= tempMediaPlayerX + mpWidth &&
-                        (int) unscaledMouseY >= tempMediaPlayerY && (int) unscaledMouseY <= tempMediaPlayerY + mpHeight) {
+                        (int) unscaledMouseY >= tempMediaPlayerY
+                        && (int) unscaledMouseY <= tempMediaPlayerY + mpHeight) {
                     draggingElement = "mediaPlayer";
                 }
             }
 
             if (draggingElement != null) {
+                selectedElement = draggingElement;
                 dragOffsetX = (int) unscaledMouseX - getElementX(draggingElement);
                 dragOffsetY = (int) unscaledMouseY - getElementY(draggingElement);
                 return true;
+            } else {
+                // Clicked on empty space - deselect
+                selectedElement = null;
             }
         }
+
+        // Right-click to resize selected element
+        if (button == 1 && selectedElement != null && hudModule != null) {
+            resizingElement = selectedElement;
+            resizeStartY = mouseY;
+            resizeStartScale = getElementScale(selectedElement);
+            return true;
+        }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -914,6 +951,17 @@ public class HudEditorScreen extends Screen {
             updatePositions();
             return true;
         }
+
+        // Right-click drag to resize
+        if (button == 1 && resizingElement != null && hudModule != null) {
+            double resizeDeltaY = resizeStartY - mouseY; // Drag up = positive
+            double scaleChange = resizeDeltaY * 0.005; // Sensitivity factor
+            double newScale = resizeStartScale + scaleChange;
+            newScale = Math.max(0.5, Math.min(2.0, newScale)); // Clamp to 0.5-2.0
+            setElementScale(resizingElement, newScale);
+            return true;
+        }
+
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
@@ -922,9 +970,13 @@ public class HudEditorScreen extends Screen {
         if (button == 0) {
             draggingElement = null;
         }
+        if (button == 1) {
+            resizingElement = null;
+        }
         return super.mouseReleased(mouseX, mouseY, button);
     }
-//commit
+
+    // commit
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
@@ -945,6 +997,18 @@ public class HudEditorScreen extends Screen {
         if (keyCode == GLFW.GLFW_KEY_MINUS || keyCode == GLFW.GLFW_KEY_KP_SUBTRACT) {
             gridSize = Math.max(5, gridSize - 5);
             return true;
+        }
+
+        // PageUp/PageDown to resize selected element
+        if (selectedElement != null) {
+            if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
+                adjustElementScale(selectedElement, 0.05);
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
+                adjustElementScale(selectedElement, -0.05);
+                return true;
+            }
         }
 
         return super.keyPressed(keyCode, scanCode, modifiers);
@@ -1044,5 +1108,163 @@ public class HudEditorScreen extends Screen {
     private enum BarPosition {
         LEFT, MIDDLE, RIGHT
     }
-}
 
+    private String getHoveredElement(double mouseX, double mouseY) {
+        double unscaledMouseX = toUnscaledX(mouseX);
+        double unscaledMouseY = toUnscaledY(mouseY);
+
+        String element = hudModule.getElementAtPosition((int) unscaledMouseX, (int) unscaledMouseY,
+                tempWatermarkX, tempWatermarkY,
+                tempInfoLinesX, tempInfoLinesY,
+                tempKeybindsX, tempKeybindsY,
+                tempCoordinatesX, tempCoordinatesY,
+                tempTotemsX, tempTotemsY,
+                tempModuleListX, tempModuleListY,
+                tempTargetHUDX, tempTargetHUDY,
+                tempRegionMapX, tempRegionMapY);
+
+        if (element == null && mediaPlayerModule != null && mediaPlayerModule.isEnabled()) {
+            int mpWidth = 280;
+            if (mediaPlayerModule.getSettings().stream().anyMatch(s -> s.getName().equals("Width"))) {
+                mpWidth = ((com.radium.client.gui.settings.NumberSetting) mediaPlayerModule.getSettings().stream()
+                        .filter(s -> s.getName().equals("Width")).findFirst().get()).getValue().intValue();
+            }
+            int artSize = 64;
+            int padding = 12;
+            int mpHeight = artSize + padding * 2 + 8;
+
+            if ((int) unscaledMouseX >= tempMediaPlayerX && (int) unscaledMouseX <= tempMediaPlayerX + mpWidth &&
+                    (int) unscaledMouseY >= tempMediaPlayerY && (int) unscaledMouseY <= tempMediaPlayerY + mpHeight) {
+                element = "mediaPlayer";
+            }
+        }
+
+        return element;
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (hudModule == null)
+            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+
+        // Use the element being dragged if dragging, otherwise use hovered element
+        String targetElement = draggingElement != null ? draggingElement : getHoveredElement(mouseX, mouseY);
+        if (targetElement != null) {
+            double scaleChange = verticalAmount * 0.05;
+
+            switch (targetElement) {
+                case "watermark":
+                    adjustScale(hudModule.getWatermarkScale(), scaleChange);
+                    break;
+                case "infoLines":
+                    adjustScale(hudModule.getInfoLinesScale(), scaleChange);
+                    break;
+                case "keybinds":
+                    adjustScale(hudModule.getKeybindsScale(), scaleChange);
+                    break;
+                case "coordinates":
+                    adjustScale(hudModule.getCoordinatesScale(), scaleChange);
+                    break;
+                case "totems":
+                    adjustScale(hudModule.getTotemsScale(), scaleChange);
+                    break;
+                case "moduleList":
+                    adjustScale(hudModule.getModuleListScale(), scaleChange);
+                    break;
+                case "targetHUD":
+                    adjustScale(hudModule.getTargetHUDScale(), scaleChange);
+                    break;
+                case "regionMap":
+                    adjustScale(hudModule.getRegionMapScale(), scaleChange);
+                    break;
+            }
+            return true;
+        }
+
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    private void adjustScale(com.radium.client.gui.settings.NumberSetting scaleSetting, double change) {
+        double newValue = scaleSetting.getValue() + change;
+        newValue = Math.max(scaleSetting.getMin(), Math.min(scaleSetting.getMax(), newValue));
+        scaleSetting.setValue(newValue);
+    }
+
+    private void adjustElementScale(String element, double change) {
+        if (hudModule == null)
+            return;
+        switch (element) {
+            case "watermark":
+                adjustScale(hudModule.getWatermarkScale(), change);
+                break;
+            case "infoLines":
+                adjustScale(hudModule.getInfoLinesScale(), change);
+                break;
+            case "keybinds":
+                adjustScale(hudModule.getKeybindsScale(), change);
+                break;
+            case "coordinates":
+                adjustScale(hudModule.getCoordinatesScale(), change);
+                break;
+            case "totems":
+                adjustScale(hudModule.getTotemsScale(), change);
+                break;
+            case "moduleList":
+                adjustScale(hudModule.getModuleListScale(), change);
+                break;
+            case "targetHUD":
+                adjustScale(hudModule.getTargetHUDScale(), change);
+                break;
+            case "regionMap":
+                adjustScale(hudModule.getRegionMapScale(), change);
+                break;
+        }
+    }
+
+    private double getElementScale(String element) {
+        if (hudModule == null)
+            return 1.0;
+        return switch (element) {
+            case "watermark" -> hudModule.getWatermarkScale().getValue();
+            case "infoLines" -> hudModule.getInfoLinesScale().getValue();
+            case "keybinds" -> hudModule.getKeybindsScale().getValue();
+            case "coordinates" -> hudModule.getCoordinatesScale().getValue();
+            case "totems" -> hudModule.getTotemsScale().getValue();
+            case "moduleList" -> hudModule.getModuleListScale().getValue();
+            case "targetHUD" -> hudModule.getTargetHUDScale().getValue();
+            case "regionMap" -> hudModule.getRegionMapScale().getValue();
+            default -> 1.0;
+        };
+    }
+
+    private void setElementScale(String element, double scale) {
+        if (hudModule == null)
+            return;
+        switch (element) {
+            case "watermark":
+                hudModule.getWatermarkScale().setValue(scale);
+                break;
+            case "infoLines":
+                hudModule.getInfoLinesScale().setValue(scale);
+                break;
+            case "keybinds":
+                hudModule.getKeybindsScale().setValue(scale);
+                break;
+            case "coordinates":
+                hudModule.getCoordinatesScale().setValue(scale);
+                break;
+            case "totems":
+                hudModule.getTotemsScale().setValue(scale);
+                break;
+            case "moduleList":
+                hudModule.getModuleListScale().setValue(scale);
+                break;
+            case "targetHUD":
+                hudModule.getTargetHUDScale().setValue(scale);
+                break;
+            case "regionMap":
+                hudModule.getRegionMapScale().setValue(scale);
+                break;
+        }
+    }
+}

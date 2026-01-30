@@ -89,6 +89,16 @@ public class HUD extends Module {
     private final NumberSetting regionMapX = new NumberSetting("Region Map X", 100, -1000, 10000, 1);
     private final NumberSetting regionMapY = new NumberSetting("Region Map Y", 100, -1000, 10000, 1);
 
+    // Individual HUD element scale settings
+    private final NumberSetting watermarkScale = new NumberSetting("Watermark Scale", 1.0, 0.5, 2.0, 0.05);
+    private final NumberSetting infoLinesScale = new NumberSetting("Info Lines Scale", 1.0, 0.5, 2.0, 0.05);
+    private final NumberSetting keybindsScale = new NumberSetting("Keybinds Scale", 1.0, 0.5, 2.0, 0.05);
+    private final NumberSetting coordinatesScale = new NumberSetting("Coordinates Scale", 1.0, 0.5, 2.0, 0.05);
+    private final NumberSetting totemsScale = new NumberSetting("Totems Scale", 1.0, 0.5, 2.0, 0.05);
+    private final NumberSetting moduleListScale = new NumberSetting("Module List Scale", 1.0, 0.5, 2.0, 0.05);
+    private final NumberSetting targetHUDScale = new NumberSetting("Target HUD Scale", 1.0, 0.5, 2.0, 0.05);
+    private final NumberSetting regionMapScale = new NumberSetting("Region Map Scale", 1.0, 0.5, 2.0, 0.05);
+
     public HUD() {
         super("HUD", "Config Your Hud To Your Finger Licking Goodness;)", Category.CLIENT);
         this.enabled = true;
@@ -233,6 +243,39 @@ public class HUD extends Module {
 
     public BooleanSetting getRegionMapCentered() {
         return regionMapCentered;
+    }
+
+    // Scale getters
+    public NumberSetting getWatermarkScale() {
+        return watermarkScale;
+    }
+
+    public NumberSetting getInfoLinesScale() {
+        return infoLinesScale;
+    }
+
+    public NumberSetting getKeybindsScale() {
+        return keybindsScale;
+    }
+
+    public NumberSetting getCoordinatesScale() {
+        return coordinatesScale;
+    }
+
+    public NumberSetting getTotemsScale() {
+        return totemsScale;
+    }
+
+    public NumberSetting getModuleListScale() {
+        return moduleListScale;
+    }
+
+    public NumberSetting getTargetHUDScale() {
+        return targetHUDScale;
+    }
+
+    public NumberSetting getRegionMapScale() {
+        return regionMapScale;
     }
 
     public String getPing() {
@@ -535,8 +578,37 @@ public class HUD extends Module {
         return null;
     }
 
-    public void drawEditOutline(DrawContext context, int x, int y, int width, int height, boolean isDragging) {
-        // Removed as requested
+    public void drawEditOutline(DrawContext context, int x, int y, int width, int height, boolean isDragging,
+            boolean isSelected) {
+        int outlineColor = isDragging ? 0xFF00FF00 : (isSelected ? 0xFF00AAFF : 0x88FFFFFF);
+
+        // Draw border outline
+        context.drawBorder(x, y, width, height, outlineColor);
+
+        // Only draw corner resize handles when selected
+        if (isSelected) {
+            int handleColor = 0xFF00AAFF;
+            int handleSize = 6;
+
+            // Top-left
+            context.fill(x - handleSize / 2, y - handleSize / 2, x + handleSize / 2, y + handleSize / 2, handleColor);
+            // Top-right
+            context.fill(x + width - handleSize / 2, y - handleSize / 2, x + width + handleSize / 2, y + handleSize / 2,
+                    handleColor);
+            // Bottom-left
+            context.fill(x - handleSize / 2, y + height - handleSize / 2, x + handleSize / 2,
+                    y + height + handleSize / 2,
+                    handleColor);
+            // Bottom-right
+            context.fill(x + width - handleSize / 2, y + height - handleSize / 2, x + width + handleSize / 2,
+                    y + height + handleSize / 2, handleColor);
+
+            // Draw scale indicator text
+            String scaleText = "Right-click + drag to resize";
+            int textX = x + 2;
+            int textY = y - 12;
+            context.drawText(RadiumClient.mc.textRenderer, scaleText, textX, textY, 0xFFFFFF00, true);
+        }
     }
 
     public void render(DrawContext context, float tickDelta) {
