@@ -47,8 +47,7 @@ public final class RadiumClient {
                     thread.setPriority(Thread.NORM_PRIORITY);
                     return thread;
                 },
-                new ThreadPoolExecutor.AbortPolicy()
-        );
+                new ThreadPoolExecutor.AbortPolicy());
 
         executorService.submit(this::initialize);
 
@@ -78,8 +77,6 @@ public final class RadiumClient {
         return instance;
     }
 
-
-
     public static ModuleManager getModuleManager() {
         return moduleManager;
     }
@@ -104,7 +101,6 @@ public final class RadiumClient {
         return clickGui;
     }
 
-
     public static void sendKeepAliveIfAllowed() {
         // Removed auth functionality
     }
@@ -112,7 +108,7 @@ public final class RadiumClient {
     public void initialize() {
         try {
             mc = MinecraftClient.getInstance();
-            
+
             // Wait for Minecraft client to be ready
             if (mc == null) {
                 // Retry after a short delay
@@ -123,7 +119,7 @@ public final class RadiumClient {
                 }
                 mc = MinecraftClient.getInstance();
             }
-            
+
             if (mc == null || mc.runDirectory == null) {
                 System.err.println("[Radium] Minecraft client not ready, initialization will be retried");
                 synchronized (initializationLock) {
@@ -141,8 +137,6 @@ public final class RadiumClient {
             eventManager = new EventManager();
             keybindManager = new KeybindManager();
             capeManager = new CapeManager();
-
-
 
             clickGui = new ClickGUI();
             moduleManager.register(clickGui);
@@ -167,7 +161,7 @@ public final class RadiumClient {
             moduleManager.register(new FastPlace());
             moduleManager.register(new ClusterFinder());
             moduleManager.register(new AutoReplenish());
-            moduleManager.register(new PlayerDetection());
+
             moduleManager.register(new BaseDigger());
             moduleManager.register(new AutoJumpReset());
             moduleManager.register(new StorageESP());
@@ -197,7 +191,6 @@ public final class RadiumClient {
             moduleManager.register(new SwingSpeed());
             moduleManager.register(new FullBright());
             moduleManager.register(new AnchorMacro());
-            moduleManager.register(new CrystalMacro());
             moduleManager.register(new AutoCrystal());
             moduleManager.register(new PlacementOptimizer());
             moduleManager.register(new CrystalOptimizer());
@@ -239,7 +232,7 @@ public final class RadiumClient {
 
             moduleManager.register(new com.radium.client.modules.misc.Sprint());
             moduleManager.register(new com.radium.client.modules.misc.InventoryWalk());
-            
+
             moduleManager.register(new Blink());
 
             moduleManager.register(new AutoWeapon());
@@ -275,7 +268,8 @@ public final class RadiumClient {
                 Thread moduleThread = new Thread(() -> {
                     while (!Thread.currentThread().isInterrupted()) {
                         try {
-                            if (moduleManager != null) moduleManager.tick();
+                            if (moduleManager != null)
+                                moduleManager.tick();
                             Thread.sleep(50);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
@@ -286,7 +280,6 @@ public final class RadiumClient {
                 moduleThread.setDaemon(true);
                 moduleThread.setName("Radium-ModuleTicker");
                 moduleThread.start();
-
 
             });
 

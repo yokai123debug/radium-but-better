@@ -44,7 +44,8 @@ public final class AutoCrystal extends Module implements TickListener {
 
     public AutoCrystal() {
         super("Auto Crystal", "Automatically crystals fast for you", Category.COMBAT);
-        this.addSettings(activateKey, placeDelay, breakDelay, placeChance, breakChance, lootProtect, fakePunch, clickSimulation, damageTick, antiWeakness, particleChance);
+        this.addSettings(activateKey, placeDelay, breakDelay, placeChance, breakChance, lootProtect, fakePunch,
+                clickSimulation, damageTick, antiWeakness, particleChance);
     }
 
     @Override
@@ -67,15 +68,16 @@ public final class AutoCrystal extends Module implements TickListener {
 
     @Override
     public void onTick2() {
-        if (mc.player == null || mc.world == null) return;
+        if (mc.player == null || mc.world == null)
+            return;
 
         if (mc.currentScreen == null) {
             boolean dontPlace = this.placeClock != 0;
             boolean dontBreak = this.breakClock != 0;
 
-
             if (this.lootProtect.getValue()) {
-                if (WorldUtil.isDeadBodyNearby() || WorldUtil.isValuableLootNearby()) return;
+                if (WorldUtil.isDeadBodyNearby() || WorldUtil.isValuableLootNearby())
+                    return;
             }
 
             int randomInt = random.nextInt(100) + 1;
@@ -97,17 +99,16 @@ public final class AutoCrystal extends Module implements TickListener {
                     } else {
                         this.crystalling = true;
 
-
                         if (mc.player.getMainHandStack().getItem() == Items.END_CRYSTAL) {
                             HitResult target = mc.crosshairTarget;
-
 
                             if (target instanceof BlockHitResult hit) {
                                 if (hit.getType() == HitResult.Type.BLOCK) {
                                     BlockPos pos = hit.getBlockPos();
                                     boolean isObsidian = mc.world.getBlockState(pos).isOf(Blocks.OBSIDIAN);
                                     boolean isBedrock = mc.world.getBlockState(pos).isOf(Blocks.BEDROCK);
-                                    boolean canPlace = (isObsidian || isBedrock) && CrystalUtil.canPlaceCrystalClientAssumeObsidian(pos);
+                                    boolean canPlace = (isObsidian || isBedrock)
+                                            && CrystalUtil.canPlaceCrystalClientAssumeObsidian(pos);
 
                                     if (!dontPlace && randomInt <= this.placeChance.getValue()) {
                                         if (canPlace) {
@@ -115,10 +116,10 @@ public final class AutoCrystal extends Module implements TickListener {
                                             this.placeClock = this.placeDelay.getValue().intValue();
                                         }
 
-
                                         if (this.fakePunch.getValue()) {
                                             if (!dontBreak && randomInt <= this.breakChance.getValue()) {
-                                                if (isObsidian || isBedrock) return;
+                                                if (isObsidian || isBedrock)
+                                                    return;
 
                                                 mc.interactionManager.attackBlock(pos, hit.getSide());
                                                 mc.player.swingHand(Hand.MAIN_HAND);
@@ -129,14 +130,15 @@ public final class AutoCrystal extends Module implements TickListener {
                                 }
                             }
 
-
                             randomInt = random.nextInt(100) + 1;
                             if (target instanceof EntityHitResult hit) {
                                 if (!dontBreak && randomInt <= this.breakChance.getValue()) {
                                     Entity entity = hit.getEntity();
-                                    boolean validTarget = entity instanceof EndCrystalEntity || entity instanceof SlimeEntity;
+                                    boolean validTarget = entity instanceof EndCrystalEntity
+                                            || entity instanceof SlimeEntity;
 
-                                    if (!this.fakePunch.getValue() && !validTarget) return;
+                                    if (!this.fakePunch.getValue() && !validTarget)
+                                        return;
 
                                     if (validTarget) {
                                         int previousSlot = mc.player.getInventory().selectedSlot;
@@ -161,12 +163,14 @@ public final class AutoCrystal extends Module implements TickListener {
     }
 
     private boolean cantBreakCrystal() {
-        if (mc.player == null) return false;
+        if (mc.player == null)
+            return false;
 
         boolean hasWeakness = mc.player.hasStatusEffect(StatusEffects.WEAKNESS);
         boolean hasStrength = mc.player.hasStatusEffect(StatusEffects.STRENGTH);
 
-        if (!hasWeakness) return false;
+        if (!hasWeakness)
+            return false;
 
         int weaknessLvl = mc.player.getStatusEffect(StatusEffects.WEAKNESS).getAmplifier();
         int strengthLvl = hasStrength ? mc.player.getStatusEffect(StatusEffects.STRENGTH).getAmplifier() : -1;
@@ -182,4 +186,3 @@ public final class AutoCrystal extends Module implements TickListener {
         return net.minecraft.client.util.InputUtil.isKeyPressed(mc.getWindow().getHandle(), key);
     }
 }
-

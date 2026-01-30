@@ -2,7 +2,7 @@ package com.radium.client.systems.accounts;
 // radium client
 
 import com.radium.client.systems.accounts.types.CrackedAccount;
-import com.radium.client.systems.accounts.types.MicrosoftAccount;
+
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
@@ -119,7 +119,8 @@ public class AccountManager implements Iterable<Account<?>> {
 
             for (int i = 0; i < list.size(); i++) {
                 NbtCompound accountTag = list.getCompound(i);
-                if (accountTag == null) continue;
+                if (accountTag == null)
+                    continue;
 
                 if (!accountTag.contains("type")) {
                     System.err.println("Account at index " + i + " missing type field");
@@ -136,7 +137,7 @@ public class AccountManager implements Iterable<Account<?>> {
 
                     Account<?> account = switch (type) {
                         case Cracked -> new CrackedAccount(null).fromTag(accountTag);
-                        case Microsoft -> new MicrosoftAccount(null).fromTag(accountTag);
+                        case Microsoft -> null;
                     };
 
                     if (account != null) {

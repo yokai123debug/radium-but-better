@@ -88,6 +88,7 @@ public class HUD extends Module {
     private final NumberSetting targetHUDY = new NumberSetting("Target HUD Y", 8, -1000, 10000, 1);
     private final NumberSetting regionMapX = new NumberSetting("Region Map X", 100, -1000, 10000, 1);
     private final NumberSetting regionMapY = new NumberSetting("Region Map Y", 100, -1000, 10000, 1);
+
     public HUD() {
         super("HUD", "Config Your Hud To Your Finger Licking Goodness;)", Category.CLIENT);
         this.enabled = true;
@@ -320,7 +321,8 @@ public class HUD extends Module {
             return BarPosition.LEFT;
         } else if (xPos >= screenWidth - threshold - 100) { // Generic check, will be refined in render
             var mc = RadiumClient.mc;
-            if (xPos > screenWidth - 200) return BarPosition.RIGHT;
+            if (xPos > screenWidth - 200)
+                return BarPosition.RIGHT;
             return BarPosition.MIDDLE;
         } else {
             return BarPosition.MIDDLE;
@@ -371,9 +373,9 @@ public class HUD extends Module {
     }
 
     public String getElementAtPosition(int mouseX, int mouseY,
-                                       int tempWX, int tempWY, int tempIX, int tempIY, int tempKX, int tempKY,
-                                       int tempCX, int tempCY, int tempTX, int tempTY, int tempMX, int tempMY, int tempTHX, int tempTHY,
-                                       int tempRMX, int tempRMY) {
+            int tempWX, int tempWY, int tempIX, int tempIY, int tempKX, int tempKY,
+            int tempCX, int tempCY, int tempTX, int tempTY, int tempMX, int tempMY, int tempTHX, int tempTHY,
+            int tempRMX, int tempRMY) {
         var mc = RadiumClient.mc;
         if (mc.getWindow() == null)
             return null;
@@ -571,7 +573,8 @@ public class HUD extends Module {
 
         // Keep currentTheme enum for compatibility with existing code
         Themes themesModule = RadiumClient.moduleManager.getModule(Themes.class);
-        Themes.HudTheme currentTheme = themesModule != null ? themesModule.hudTheme.getValue() : Themes.HudTheme.MIDNIGHT;
+        Themes.HudTheme currentTheme = themesModule != null ? themesModule.hudTheme.getValue()
+                : Themes.HudTheme.MIDNIGHT;
 
         boolean isModuleListOnLeft = false;
 
@@ -603,7 +606,8 @@ public class HUD extends Module {
         int infoHeight = 0;
         if (!infoLines.isEmpty()) {
             // Add extra padding to prevent text cutoff
-            infoHeight = (textHeight * infoLines.size()) + (itemPadding * (infoLines.size() - 1)) + (boxPadding * 2) + 2;
+            infoHeight = (textHeight * infoLines.size()) + (itemPadding * (infoLines.size() - 1)) + (boxPadding * 2)
+                    + 2;
             totalLeftHeight += infoHeight + 8;
         }
 
@@ -655,13 +659,13 @@ public class HUD extends Module {
         String WatermarkText = "";
         switch (watermark.getValue()) {
             case WatermarkStyle.LOWERCASE:
-                WatermarkText = "radium open sourced by sakuracheats.com";
+                WatermarkText = "radium but better";
                 break;
             case WatermarkStyle.UPPERCASE:
-                WatermarkText = "RADIUM OPEN SRC BY SAKURACHEATS.COM";
+                WatermarkText = "RADIUM BUT BETTER";
                 break;
             default:
-                WatermarkText = "Radium Open Sourced By Sakuracheats.com";
+                WatermarkText = "Radium But Better";
                 break;
         }
 
@@ -681,7 +685,8 @@ public class HUD extends Module {
 
             // SpotiPlay style for all themes: clean rounded rectangles
             if (useShadows) {
-                RenderUtils.fillRoundRect(context, boxX + 1, watermarkYPos + 1, boxWidth, boxHeight, radius, radius, radius,
+                RenderUtils.fillRoundRect(context, boxX + 1, watermarkYPos + 1, boxWidth, boxHeight, radius, radius,
+                        radius,
                         radius, shadowColor);
             }
             RenderUtils.fillRoundRect(context, boxX, watermarkYPos, boxWidth, boxHeight, radius, radius, radius,
@@ -698,7 +703,7 @@ public class HUD extends Module {
             // Clean text rendering - ensure pixel-perfect alignment
             float textXPos = Math.round(textX / textScale);
             float textYPos = Math.round(textY / textScale) + 1.0f;
-            context.drawText(mc.textRenderer, WatermarkText, (int)textXPos, (int)textYPos, textColorAtCenter, false);
+            context.drawText(mc.textRenderer, WatermarkText, (int) textXPos, (int) textYPos, textColorAtCenter, false);
             context.getMatrices().pop();
 
             if (!useCustomPositions()) {
@@ -715,7 +720,8 @@ public class HUD extends Module {
             }
 
             // Add extra padding to prevent text cutoff
-            int boxHeight = (textHeight * infoLines.size()) + (itemPadding * (infoLines.size() - 1)) + (boxPadding * 2) + 2;
+            int boxHeight = (textHeight * infoLines.size()) + (itemPadding * (infoLines.size() - 1)) + (boxPadding * 2)
+                    + 2;
 
             int infoXPos = useCustomPositions() ? infoLinesX.getValue().intValue() : leftMargin;
             int infoYPos = useCustomPositions() ? infoLinesY.getValue().intValue() : currentY;
@@ -733,9 +739,12 @@ public class HUD extends Module {
                 int shadowColor2 = (shadowAlpha2 << 24) | (shadowColor & 0x00FFFFFF);
                 int shadowColor3 = (shadowAlpha3 << 24) | (shadowColor & 0x00FFFFFF);
 
-                RenderUtils.fillRoundRect(context, boxX + 3, infoYPos + 3, boxWidth, boxHeight, radius, radius, radius, radius, shadowColor3);
-                RenderUtils.fillRoundRect(context, boxX + 2, infoYPos + 2, boxWidth, boxHeight, radius, radius, radius, radius, shadowColor2);
-                RenderUtils.fillRoundRect(context, boxX + 1, infoYPos + 1, boxWidth, boxHeight, radius, radius, radius, radius, shadowColor1);
+                RenderUtils.fillRoundRect(context, boxX + 3, infoYPos + 3, boxWidth, boxHeight, radius, radius, radius,
+                        radius, shadowColor3);
+                RenderUtils.fillRoundRect(context, boxX + 2, infoYPos + 2, boxWidth, boxHeight, radius, radius, radius,
+                        radius, shadowColor2);
+                RenderUtils.fillRoundRect(context, boxX + 1, infoYPos + 1, boxWidth, boxHeight, radius, radius, radius,
+                        radius, shadowColor1);
             }
             RenderUtils.fillRoundRect(context, boxX, infoYPos, boxWidth, boxHeight, radius, radius, radius, radius,
                     backgroundColor);
@@ -744,7 +753,8 @@ public class HUD extends Module {
                 RenderUtils.drawRoundRect(context, boxX, infoYPos, boxWidth, boxHeight, radius, borderColor);
                 // Inner border highlight
                 int highlightBorder = RadiumGuiTheme.applyAlpha(borderColor, 0.3f);
-                RenderUtils.drawRoundRect(context, boxX + 1, infoYPos + 1, boxWidth - 2, boxHeight - 2, Math.max(0, radius - 1), highlightBorder);
+                RenderUtils.drawRoundRect(context, boxX + 1, infoYPos + 1, boxWidth - 2, boxHeight - 2,
+                        Math.max(0, radius - 1), highlightBorder);
             }
 
             int lineY = infoYPos + boxPadding;
@@ -756,7 +766,7 @@ public class HUD extends Module {
                 // Clean text rendering - ensure pixel-perfect alignment
                 float textXPos = Math.round(textX / textScale);
                 float textYPos = Math.round(lineY / textScale);
-                context.drawText(mc.textRenderer, line, (int)textXPos, (int)textYPos, textColor, false);
+                context.drawText(mc.textRenderer, line, (int) textXPos, (int) textYPos, textColor, false);
                 context.getMatrices().pop();
 
                 lineY += textHeight + itemPadding;
@@ -814,18 +824,23 @@ public class HUD extends Module {
                     int shadowColor2 = (shadowAlpha2 << 24) | (shadowColor & 0x00FFFFFF);
                     int shadowColor3 = (shadowAlpha3 << 24) | (shadowColor & 0x00FFFFFF);
 
-                    RenderUtils.fillRoundRect(context, boxX + 3, keybindsYPos + 3, boxWidth, boxHeight, radius, radius, radius, radius, shadowColor3);
-                    RenderUtils.fillRoundRect(context, boxX + 2, keybindsYPos + 2, boxWidth, boxHeight, radius, radius, radius, radius, shadowColor2);
-                    RenderUtils.fillRoundRect(context, boxX + 1, keybindsYPos + 1, boxWidth, boxHeight, radius, radius, radius, radius, shadowColor1);
+                    RenderUtils.fillRoundRect(context, boxX + 3, keybindsYPos + 3, boxWidth, boxHeight, radius, radius,
+                            radius, radius, shadowColor3);
+                    RenderUtils.fillRoundRect(context, boxX + 2, keybindsYPos + 2, boxWidth, boxHeight, radius, radius,
+                            radius, radius, shadowColor2);
+                    RenderUtils.fillRoundRect(context, boxX + 1, keybindsYPos + 1, boxWidth, boxHeight, radius, radius,
+                            radius, radius, shadowColor1);
                 }
-                RenderUtils.fillRoundRect(context, boxX, keybindsYPos, boxWidth, boxHeight, radius, radius, radius, radius,
+                RenderUtils.fillRoundRect(context, boxX, keybindsYPos, boxWidth, boxHeight, radius, radius, radius,
+                        radius,
                         backgroundColor);
                 if (useBorders) {
                     // Enhanced border with gradient effect
                     RenderUtils.drawRoundRect(context, boxX, keybindsYPos, boxWidth, boxHeight, radius, borderColor);
                     // Inner border highlight
                     int highlightBorder = RadiumGuiTheme.applyAlpha(borderColor, 0.3f);
-                    RenderUtils.drawRoundRect(context, boxX + 1, keybindsYPos + 1, boxWidth - 2, boxHeight - 2, Math.max(0, radius - 1), highlightBorder);
+                    RenderUtils.drawRoundRect(context, boxX + 1, keybindsYPos + 1, boxWidth - 2, boxHeight - 2,
+                            Math.max(0, radius - 1), highlightBorder);
                 }
             } else {
                 // Default theme: original style with side bars
@@ -855,7 +870,8 @@ public class HUD extends Module {
                         drawVerticalGradientBar(context, fixedBarX, keybindsYPos, barWidth, boxHeight, currentPixelY,
                                 totalLeftHeight);
                     } else {
-                        context.fill(fixedBarX, keybindsYPos, fixedBarX + barWidth, keybindsYPos + boxHeight, accentColor);
+                        context.fill(fixedBarX, keybindsYPos, fixedBarX + barWidth, keybindsYPos + boxHeight,
+                                accentColor);
                     }
                 } else if (barPos == BarPosition.RIGHT) {
                     RenderUtils.fillRoundRect(context, boxX, keybindsYPos, boxWidth - barWidth, boxHeight, radius, 0, 0,
@@ -874,8 +890,10 @@ public class HUD extends Module {
                 BarPosition barPos = useCustomPositions() ? getBarPosition(keybindsXPos, mc.getWindow().getWidth())
                         : BarPosition.LEFT;
                 int keybindsBoxWidth = maxWidth + (boxPadding * 2) + (barPos != BarPosition.MIDDLE ? barWidth : 0);
-                int fixedBarX = barPos == BarPosition.LEFT ? 0 : (barPos == BarPosition.RIGHT ? mc.getWindow().getWidth() - barWidth : 0);
-                textX = getTextX(barPos, boxX, keybindsBoxWidth - (barPos != BarPosition.MIDDLE ? barWidth : 0), labelWidth,
+                int fixedBarX = barPos == BarPosition.LEFT ? 0
+                        : (barPos == BarPosition.RIGHT ? mc.getWindow().getWidth() - barWidth : 0);
+                textX = getTextX(barPos, boxX, keybindsBoxWidth - (barPos != BarPosition.MIDDLE ? barWidth : 0),
+                        labelWidth,
                         boxPadding, fixedBarX);
             }
             int lineY = keybindsY + boxPadding;
@@ -888,7 +906,7 @@ public class HUD extends Module {
             // Clean text rendering - ensure pixel-perfect alignment
             float textXPos = Math.round(textX / textScale);
             float textYPos = Math.round(lineY / textScale);
-            context.drawText(mc.textRenderer, labelText, (int)textXPos, (int)textYPos, labelColor, false);
+            context.drawText(mc.textRenderer, labelText, (int) textXPos, (int) textYPos, labelColor, false);
             context.getMatrices().pop();
 
             lineY += textHeight + itemPadding;
@@ -899,7 +917,8 @@ public class HUD extends Module {
             if (theme.isModernStyle()) {
                 separatorX2 = boxX + boxWidth - boxPadding - 1;
                 // Slightly thicker separator for more natural feel / sci-fi glow
-                RenderUtils.fillRoundRect(context, separatorX1, lineY + 1, separatorX2 - separatorX1, 2, 1, 1, 1, 1, separatorColor);
+                RenderUtils.fillRoundRect(context, separatorX1, lineY + 1, separatorX2 - separatorX1, 2, 1, 1, 1, 1,
+                        separatorColor);
             } else {
                 BarPosition barPos = useCustomPositions() ? getBarPosition(keybindsXPos, mc.getWindow().getWidth())
                         : BarPosition.LEFT;
@@ -924,7 +943,8 @@ public class HUD extends Module {
                 String line = moduleName + " - " + keybindName;
 
                 // Use theme secondary text color
-                int lineColor = theme.getSecondaryTextColor(currentPixelY + (lineY - keybindsY) + textHeight / 2, totalLeftHeight, this);
+                int lineColor = theme.getSecondaryTextColor(currentPixelY + (lineY - keybindsY) + textHeight / 2,
+                        totalLeftHeight, this);
 
                 int lineWidth = (int) (mc.textRenderer.getWidth(line) * textScale);
 
@@ -935,14 +955,16 @@ public class HUD extends Module {
                     BarPosition barPos = useCustomPositions() ? getBarPosition(keybindsXPos, mc.getWindow().getWidth())
                             : BarPosition.LEFT;
                     int keybindsBoxWidth = maxWidth + (boxPadding * 2) + (barPos != BarPosition.MIDDLE ? barWidth : 0);
-                    int fixedBarX = barPos == BarPosition.LEFT ? 0 : (barPos == BarPosition.RIGHT ? mc.getWindow().getWidth() - barWidth : 0);
+                    int fixedBarX = barPos == BarPosition.LEFT ? 0
+                            : (barPos == BarPosition.RIGHT ? mc.getWindow().getWidth() - barWidth : 0);
                     lineTextX = getTextX(barPos, boxX, keybindsBoxWidth - (barPos != BarPosition.MIDDLE ? barWidth : 0),
                             lineWidth, boxPadding, fixedBarX);
                 }
 
                 context.getMatrices().push();
                 context.getMatrices().scale(textScale, textScale, 1.0f);
-                context.drawText(mc.textRenderer, line, (int)(lineTextX / textScale), (int)(lineY / textScale), lineColor, false); // No drop shadow for less bold look
+                context.drawText(mc.textRenderer, line, (int) (lineTextX / textScale), (int) (lineY / textScale),
+                        lineColor, false); // No drop shadow for less bold look
                 context.getMatrices().pop();
 
                 lineY += textHeight + itemPadding;
@@ -983,13 +1005,15 @@ public class HUD extends Module {
 
                 if (useShadows) {
                     // Shadow offset for depth
-                    RenderUtils.fillRoundRect(context, boxX + 1, coordYPos + 1, coordBoxWidth, coordBoxHeight, radius, radius,
+                    RenderUtils.fillRoundRect(context, boxX + 1, coordYPos + 1, coordBoxWidth, coordBoxHeight, radius,
+                            radius,
                             radius, radius, shadowColor);
                 }
                 RenderUtils.fillRoundRect(context, boxX, coordYPos, coordBoxWidth, coordBoxHeight, radius, radius,
                         radius, radius, backgroundColor);
                 if (useBorders) {
-                    RenderUtils.drawRoundRect(context, boxX, coordYPos, coordBoxWidth, coordBoxHeight, radius, borderColor);
+                    RenderUtils.drawRoundRect(context, boxX, coordYPos, coordBoxWidth, coordBoxHeight, radius,
+                            borderColor);
                 }
             } else {
                 // Default theme: original style with side bars
@@ -1013,11 +1037,13 @@ public class HUD extends Module {
                 }
 
                 if (barPos == BarPosition.LEFT) {
-                    RenderUtils.fillRoundRect(context, boxX, coordYPos, coordBoxWidth - barWidth, coordBoxHeight, 0, radius,
+                    RenderUtils.fillRoundRect(context, boxX, coordYPos, coordBoxWidth - barWidth, coordBoxHeight, 0,
+                            radius,
                             radius, 0, backgroundColor);
                     context.fill(fixedBarX, coordYPos, fixedBarX + barWidth, coordYPos + coordBoxHeight, coordColor);
                 } else if (barPos == BarPosition.RIGHT) {
-                    RenderUtils.fillRoundRect(context, boxX, coordYPos, coordBoxWidth - barWidth, coordBoxHeight, radius, 0,
+                    RenderUtils.fillRoundRect(context, boxX, coordYPos, coordBoxWidth - barWidth, coordBoxHeight,
+                            radius, 0,
                             0, radius, backgroundColor);
                     context.fill(fixedBarX, coordYPos, fixedBarX + barWidth, coordYPos + coordBoxHeight, coordColor);
                 } else {
@@ -1033,7 +1059,8 @@ public class HUD extends Module {
                 BarPosition barPos = useCustomPositions() ? getBarPosition(coordXPos, mc.getWindow().getWidth())
                         : BarPosition.MIDDLE;
                 int coordBoxWidthCalc = coordWidth + (boxPadding * 2) + (barPos != BarPosition.MIDDLE ? barWidth : 0);
-                int fixedBarX = barPos == BarPosition.LEFT ? 0 : (barPos == BarPosition.RIGHT ? mc.getWindow().getWidth() - barWidth : 0);
+                int fixedBarX = barPos == BarPosition.LEFT ? 0
+                        : (barPos == BarPosition.RIGHT ? mc.getWindow().getWidth() - barWidth : 0);
                 textX = getTextX(barPos, boxX, coordBoxWidthCalc - (barPos != BarPosition.MIDDLE ? barWidth : 0),
                         coordWidth, boxPadding, fixedBarX);
             }
@@ -1044,7 +1071,7 @@ public class HUD extends Module {
             // Clean text rendering - ensure pixel-perfect alignment
             float textXPos = Math.round(textX / textScale);
             float textYPos = Math.round(textY / textScale);
-            context.drawText(mc.textRenderer, coordText, (int)textXPos, (int)textYPos, coordColor, false);
+            context.drawText(mc.textRenderer, coordText, (int) textXPos, (int) textYPos, coordColor, false);
             context.getMatrices().pop();
 
             if (!useCustomPositions()) {
@@ -1073,13 +1100,15 @@ public class HUD extends Module {
 
                 if (useShadows) {
                     // Shadow offset for depth
-                    RenderUtils.fillRoundRect(context, boxX + 1, totemYPos + 1, totemBoxWidth, totemBoxHeight, radius, radius,
+                    RenderUtils.fillRoundRect(context, boxX + 1, totemYPos + 1, totemBoxWidth, totemBoxHeight, radius,
+                            radius,
                             radius, radius, shadowColor);
                 }
                 RenderUtils.fillRoundRect(context, boxX, totemYPos, totemBoxWidth, totemBoxHeight, radius, radius,
                         radius, radius, backgroundColor);
                 if (useBorders) {
-                    RenderUtils.drawRoundRect(context, boxX, totemYPos, totemBoxWidth, totemBoxHeight, radius, borderColor);
+                    RenderUtils.drawRoundRect(context, boxX, totemYPos, totemBoxWidth, totemBoxHeight, radius,
+                            borderColor);
                 }
             } else {
                 // Default theme: original style with side bars
@@ -1103,11 +1132,13 @@ public class HUD extends Module {
                 }
 
                 if (barPos == BarPosition.LEFT) {
-                    RenderUtils.fillRoundRect(context, boxX, totemYPos, totemBoxWidth - barWidth, totemBoxHeight, 0, radius,
+                    RenderUtils.fillRoundRect(context, boxX, totemYPos, totemBoxWidth - barWidth, totemBoxHeight, 0,
+                            radius,
                             radius, 0, backgroundColor);
                     context.fill(fixedBarX, totemYPos, fixedBarX + barWidth, totemYPos + totemBoxHeight, totemColor);
                 } else if (barPos == BarPosition.RIGHT) {
-                    RenderUtils.fillRoundRect(context, boxX, totemYPos, totemBoxWidth - barWidth, totemBoxHeight, radius, 0,
+                    RenderUtils.fillRoundRect(context, boxX, totemYPos, totemBoxWidth - barWidth, totemBoxHeight,
+                            radius, 0,
                             0, radius, backgroundColor);
                     context.fill(fixedBarX, totemYPos, fixedBarX + barWidth, totemYPos + totemBoxHeight, totemColor);
                 } else {
@@ -1123,7 +1154,8 @@ public class HUD extends Module {
                 BarPosition barPos = useCustomPositions() ? getBarPosition(totemXPos, mc.getWindow().getWidth())
                         : BarPosition.MIDDLE;
                 int totemBoxWidthCalc = totemWidth + (boxPadding * 2) + (barPos != BarPosition.MIDDLE ? barWidth : 0);
-                int fixedBarX = barPos == BarPosition.LEFT ? 0 : (barPos == BarPosition.RIGHT ? mc.getWindow().getWidth() - barWidth : 0);
+                int fixedBarX = barPos == BarPosition.LEFT ? 0
+                        : (barPos == BarPosition.RIGHT ? mc.getWindow().getWidth() - barWidth : 0);
                 totemTextX = getTextX(barPos, boxX, totemBoxWidthCalc - (barPos != BarPosition.MIDDLE ? barWidth : 0),
                         totemWidth, boxPadding, fixedBarX);
             }
@@ -1134,7 +1166,7 @@ public class HUD extends Module {
             // Clean text rendering - ensure pixel-perfect alignment
             float textXPos = Math.round(totemTextX / textScale);
             float textYPos = Math.round(totemTextY / textScale);
-            context.drawText(mc.textRenderer, totemText, (int)textXPos, (int)textYPos, totemColor, false);
+            context.drawText(mc.textRenderer, totemText, (int) textXPos, (int) textYPos, totemColor, false);
             context.getMatrices().pop();
 
             if (!useCustomPositions()) {
@@ -1264,7 +1296,7 @@ public class HUD extends Module {
                     // Clean text rendering - ensure pixel-perfect alignment
                     float textXPos = Math.round(textX / textScale);
                     float textYPos = Math.round(yOffset / textScale);
-                    context.drawText(mc.textRenderer, moduleName, (int)textXPos, (int)textYPos, barColor, false);
+                    context.drawText(mc.textRenderer, moduleName, (int) textXPos, (int) textYPos, barColor, false);
                     context.getMatrices().pop();
                 } else if (isMiddle) {
                     int boxWidth = nameWidth + boxPadding * 2;
@@ -1276,7 +1308,8 @@ public class HUD extends Module {
 
                     if (boxWidth > 0) {
                         // Add subtle shadow for depth
-                        RenderUtils.fillRoundRect(context, baseX + 1, backgroundY1 + 1, boxWidth, backgroundY2 - backgroundY1,
+                        RenderUtils.fillRoundRect(context, baseX + 1, backgroundY1 + 1, boxWidth,
+                                backgroundY2 - backgroundY1,
                                 radius, radius, radius, radius, shadowColor);
 
                         RenderUtils.fillRoundRect(context, baseX, backgroundY1, boxWidth, backgroundY2 - backgroundY1,
@@ -1289,7 +1322,8 @@ public class HUD extends Module {
                         context.getMatrices().push();
                         context.getMatrices().scale(textScale, textScale, 1.0f);
                         // Clean text rendering
-                        context.drawText(mc.textRenderer, moduleName, (int)(textX / textScale), (int)(yOffset / textScale), barColor, false);
+                        context.drawText(mc.textRenderer, moduleName, (int) (textX / textScale),
+                                (int) (yOffset / textScale), barColor, false);
                         context.getMatrices().pop();
                     }
                 } else {
@@ -1315,22 +1349,28 @@ public class HUD extends Module {
                                 int shadowColor2 = (shadowAlpha2 << 24) | (shadowColor & 0x00FFFFFF);
                                 int shadowColor3 = (shadowAlpha3 << 24) | (shadowColor & 0x00FFFFFF);
 
-                                RenderUtils.fillRoundRect(context, boxX + 3, backgroundY1 + 3, boxWidth, backgroundY2 - backgroundY1, radius,
+                                RenderUtils.fillRoundRect(context, boxX + 3, backgroundY1 + 3, boxWidth,
+                                        backgroundY2 - backgroundY1, radius,
                                         radius, radius, radius, shadowColor3);
-                                RenderUtils.fillRoundRect(context, boxX + 2, backgroundY1 + 2, boxWidth, backgroundY2 - backgroundY1, radius,
+                                RenderUtils.fillRoundRect(context, boxX + 2, backgroundY1 + 2, boxWidth,
+                                        backgroundY2 - backgroundY1, radius,
                                         radius, radius, radius, shadowColor2);
-                                RenderUtils.fillRoundRect(context, boxX + 1, backgroundY1 + 1, boxWidth, backgroundY2 - backgroundY1, radius,
+                                RenderUtils.fillRoundRect(context, boxX + 1, backgroundY1 + 1, boxWidth,
+                                        backgroundY2 - backgroundY1, radius,
                                         radius, radius, radius, shadowColor1);
                             }
-                            RenderUtils.fillRoundRect(context, boxX, backgroundY1, boxWidth, backgroundY2 - backgroundY1, radius,
+                            RenderUtils.fillRoundRect(context, boxX, backgroundY1, boxWidth,
+                                    backgroundY2 - backgroundY1, radius,
                                     radius, radius, radius, backgroundColor);
                             if (useBorders) {
                                 // Enhanced border with gradient effect
-                                RenderUtils.drawRoundRect(context, boxX, backgroundY1, boxWidth, backgroundY2 - backgroundY1, radius,
+                                RenderUtils.drawRoundRect(context, boxX, backgroundY1, boxWidth,
+                                        backgroundY2 - backgroundY1, radius,
                                         borderColor);
                                 // Inner border highlight
                                 int highlightBorder = RadiumGuiTheme.applyAlpha(borderColor, 0.3f);
-                                RenderUtils.drawRoundRect(context, boxX + 1, backgroundY1 + 1, boxWidth - 2, backgroundY2 - backgroundY1 - 2, Math.max(0, radius - 1), highlightBorder);
+                                RenderUtils.drawRoundRect(context, boxX + 1, backgroundY1 + 1, boxWidth - 2,
+                                        backgroundY2 - backgroundY1 - 2, Math.max(0, radius - 1), highlightBorder);
                             }
                         }
                     } else {
@@ -1347,7 +1387,8 @@ public class HUD extends Module {
                         moduleColor = getColorAtHeight(currentPixelY + moduleBarHeight / 2, totalLeftHeight);
 
                         if (boxWidth > 0) {
-                            RenderUtils.fillRoundRect(context, boxX, backgroundY1, boxWidth, backgroundY2 - backgroundY1, 0,
+                            RenderUtils.fillRoundRect(context, boxX, backgroundY1, boxWidth,
+                                    backgroundY2 - backgroundY1, 0,
                                     radius, radius, 0, backgroundColor);
 
                             if (useGradient.getValue() && totalLeftHeight > 1) {
@@ -1361,7 +1402,8 @@ public class HUD extends Module {
 
                     context.getMatrices().push();
                     context.getMatrices().scale(textScale, textScale, 1.0f);
-                    context.drawText(mc.textRenderer, moduleName, (int)(textX / textScale), (int)(yOffset / textScale), moduleColor, false);
+                    context.drawText(mc.textRenderer, moduleName, (int) (textX / textScale),
+                            (int) (yOffset / textScale), moduleColor, false);
                     context.getMatrices().pop();
 
                     if (!theme.isModernStyle()) {
@@ -1395,7 +1437,6 @@ public class HUD extends Module {
 
                 String healthText = String.format("%.1f/%.1f", health, maxHealth);
                 int healthTextWidth = mc.textRenderer.getWidth(healthText);
-
 
                 int contentWidth = Math.max(nameWidth, Math.max(healthTextWidth, healthBarWidth));
                 int boxWidth = headSize + padding + contentWidth + (padding * 2);
@@ -1436,17 +1477,19 @@ public class HUD extends Module {
                 float textXPos = Math.round(textX);
                 float nameYPos = Math.round(nameY);
                 float healthYPos = Math.round(healthTextY);
-                context.drawText(mc.textRenderer, targetName, (int)textXPos, (int)nameYPos, 0xFFFFFFFF, false);
+                context.drawText(mc.textRenderer, targetName, (int) textXPos, (int) nameYPos, 0xFFFFFFFF, false);
 
-                context.drawText(mc.textRenderer, healthText, (int)textXPos, (int)healthYPos, 0xFFFFFFFF, false);
+                context.drawText(mc.textRenderer, healthText, (int) textXPos, (int) healthYPos, 0xFFFFFFFF, false);
 
                 int healthBarBgColor = 0xFF2A3548;
-                RenderUtils.fillRoundRect(context, textX, healthBarY, healthBarWidth, healthBarHeight, 2, healthBarBgColor);
+                RenderUtils.fillRoundRect(context, textX, healthBarY, healthBarWidth, healthBarHeight, 2,
+                        healthBarBgColor);
 
                 int healthBarFillWidth = (int) (healthBarWidth * healthPercent);
                 if (healthBarFillWidth > 0) {
                     int healthColor = 0xFF1DB954;
-                    RenderUtils.fillRoundRect(context, textX, healthBarY, healthBarFillWidth, healthBarHeight, 2, healthColor);
+                    RenderUtils.fillRoundRect(context, textX, healthBarY, healthBarFillWidth, healthBarHeight, 2,
+                            healthColor);
                 }
             }
         }
@@ -1492,7 +1535,7 @@ public class HUD extends Module {
     }
 
     private void drawVerticalGradientBar(DrawContext context, int x, int y, int width, int height, int startPixelY,
-                                         int totalHeight) {
+            int totalHeight) {
         Color primary = hudColor.getValue();
         Color secondary = secondaryColor.getValue();
 

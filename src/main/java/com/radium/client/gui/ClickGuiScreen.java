@@ -1,6 +1,5 @@
 package com.radium.client.gui;
 
-
 import com.radium.client.client.KeybindManager;
 import com.radium.client.client.RadiumClient;
 import com.radium.client.gui.settings.*;
@@ -22,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 public class ClickGuiScreen extends Screen {
 
@@ -119,7 +119,6 @@ public class ClickGuiScreen extends Screen {
             CATEGORY_ICONS.put(Module.Category.DONUT, Identifier.of("radium", "textures/donut.png"));
         }
 
-
         int startX = 20;
         int startY = 20;
         int spacing = 140; // 115 + 25px gap
@@ -173,13 +172,15 @@ public class ClickGuiScreen extends Screen {
         mouseY = (int) scaleInput(mouseY);
         com.radium.client.utils.render.RenderUtils.customScaledProjection(2.0);
         pulseAnimation += delta * 0.08f;
-        if (pulseAnimation > 1f) pulseAnimation = 0f;
+        if (pulseAnimation > 1f)
+            pulseAnimation = 0f;
 
         float targetHover = (hoveredCategory != null || hoveredModuleIndex != -1) ? 1f : 0f;
         hoverAnimation += (targetHover - hoverAnimation) * 0.3f;
 
         this.renderBackground(context, mouseX, mouseY, delta);
-        context.fill(0, 0, width, height, RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getBackground(), RadiumGuiTheme.getPanelAlpha() * 0.6f));
+        context.fill(0, 0, width, height,
+                RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getBackground(), RadiumGuiTheme.getPanelAlpha() * 0.6f));
 
         updateDragAnimations();
 
@@ -189,7 +190,8 @@ public class ClickGuiScreen extends Screen {
         if (isAnimating) {
             long elapsed = System.currentTimeMillis() - animationStartTime;
             animationProgress = easeOutCubic(Math.min(1.0f, elapsed / (float) RadiumGuiTheme.ANIMATION_DURATION));
-            if (animationProgress >= 1.0f) isAnimating = false;
+            if (animationProgress >= 1.0f)
+                isAnimating = false;
         }
 
         hoveredCategory = null;
@@ -220,7 +222,6 @@ public class ClickGuiScreen extends Screen {
             stringListPanel.render(context, mouseX, mouseY, animationProgress);
         }
 
-
         if (enchantmentPanel.isOpen()) {
             enchantmentPanel.render(context, mouseX, mouseY, animationProgress);
         }
@@ -237,7 +238,8 @@ public class ClickGuiScreen extends Screen {
     }
 
     private void cacheThemeValues() {
-        com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.moduleManager.getModule(com.radium.client.modules.client.ClickGUI.class);
+        com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.moduleManager
+                .getModule(com.radium.client.modules.client.ClickGUI.class);
         cachedCornerRadius = (clickGUI != null && clickGUI.isRounded()) ? 12 : 0;
         cachedAccentColor = RadiumGuiTheme.getAccentColor();
         cachedHoverColor = RadiumGuiTheme.getHoverColor();
@@ -250,7 +252,8 @@ public class ClickGuiScreen extends Screen {
             int yOffset = panelY + panelHeaderHeight + 10 - (int) settingsScrollOffset + settingHeight;
             for (Setting<?> setting : selectedModule.getSettings()) {
                 if (setting instanceof ProfileSetting && ((ProfileSetting) setting).isExpanded()) {
-                    renderProfileSetting(context, (ProfileSetting) setting, panelX + 10, yOffset, mouseX, mouseY, animationProgress);
+                    renderProfileSetting(context, (ProfileSetting) setting, panelX + 10, yOffset, mouseX, mouseY,
+                            animationProgress);
                 }
                 yOffset += settingHeight;
             }
@@ -372,7 +375,8 @@ public class ClickGuiScreen extends Screen {
         return 1 - (float) Math.pow(1 - t, 3);
     }
 
-    private void renderCategory(DrawContext context, Module.Category cat, int mouseX, int mouseY, float animationProgress) {
+    private void renderCategory(DrawContext context, Module.Category cat, int mouseX, int mouseY,
+            float animationProgress) {
         int x = categoryX.get(cat);
         int y = categoryY.get(cat);
         boolean expanded = categoryExpanded.get(cat);
@@ -395,8 +399,8 @@ public class ClickGuiScreen extends Screen {
             hoveredCategory = cat;
         }
 
-
-        int categoryBgColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryBackground(), animationProgress * 0.4f);
+        int categoryBgColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryBackground(),
+                animationProgress * 0.4f);
 
         if (isDragging) {
             categoryBgColor = blendColors(categoryBgColor, cachedAccentColor, 0.15f);
@@ -414,9 +418,9 @@ public class ClickGuiScreen extends Screen {
             borderColor = RadiumGuiTheme.applyAlpha(cachedAccentColor, animationProgress * 0.6f);
         }
 
-
         boolean headerHovered = isHovered(mouseX, mouseY, x, y, categoryWidth, headerHeight);
-        int headerColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryHeader(), animationProgress * cachedPanelAlpha);
+        int headerColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryHeader(),
+                animationProgress * cachedPanelAlpha);
 
         if (expanded) {
             drawRoundedRectTop(context, x, y, categoryWidth, headerHeight, cornerRadius, headerColor);
@@ -424,18 +428,17 @@ public class ClickGuiScreen extends Screen {
             drawRoundedRect(context, x, y, categoryWidth, headerHeight, cornerRadius, headerColor);
         }
 
-
         int iconSize = 14;
         int iconPadding = 6;
         Identifier iconId = CATEGORY_ICONS.get(cat);
 
-        com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.moduleManager.getModule(com.radium.client.modules.client.ClickGUI.class);
+        com.radium.client.modules.client.ClickGUI clickGUI = RadiumClient.moduleManager
+                .getModule(com.radium.client.modules.client.ClickGUI.class);
         boolean showIcons = clickGUI != null && clickGUI.icons.getValue();
 
         if (iconId != null && showIcons) {
             int iconX = x + iconPadding;
             int iconY = y + (headerHeight - iconSize) / 2;
-
 
             int accentColor = cachedAccentColor;
             float r = ((accentColor >> 16) & 0xFF) / 255.0f;
@@ -449,7 +452,6 @@ public class ClickGuiScreen extends Screen {
         String categoryName = cat.getName().toUpperCase();
         int textY = y + (headerHeight - 8) / 2;
         int baseTextWidth = textRenderer.getWidth(categoryName);
-
 
         int textX = x + (categoryWidth - baseTextWidth) / 2;
 
@@ -503,7 +505,8 @@ public class ClickGuiScreen extends Screen {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    private void renderModule(DrawContext context, Module module, int x, int y, int mouseX, int mouseY, float animationProgress, boolean isLast, int index) {
+    private void renderModule(DrawContext context, Module module, int x, int y, int mouseX, int mouseY,
+            float animationProgress, boolean isLast, int index) {
         boolean hovered = isHovered(mouseX, mouseY, x, y, categoryWidth, moduleHeight);
         int cornerRadius = cachedCornerRadius;
 
@@ -546,7 +549,8 @@ public class ClickGuiScreen extends Screen {
         context.drawText(textRenderer, indicator, indicatorX, textY, textColor, false);
     }
 
-    private void renderModuleTooltip(DrawContext context, Module module, int mouseX, int mouseY, float animationProgress) {
+    private void renderModuleTooltip(DrawContext context, Module module, int mouseX, int mouseY,
+            float animationProgress) {
         String description = module.getDescription();
         if (description == null || description.trim().isEmpty()) {
             description = "No description available";
@@ -554,7 +558,6 @@ public class ClickGuiScreen extends Screen {
 
         String moduleName = module.getName();
         int moduleNameWidth = textRenderer.getWidth(moduleName);
-
 
         List<String> lines = wrapText(description, 250);
         int maxLineWidth = lines.stream().mapToInt(textRenderer::getWidth).max().orElse(0);
@@ -570,7 +573,6 @@ public class ClickGuiScreen extends Screen {
         int screenWidth = client.getWindow().getWidth();
         int screenHeight = client.getWindow().getHeight();
 
-
         if (tooltipX + tooltipWidth > screenWidth) {
             tooltipX = mouseX - tooltipWidth - 10;
         }
@@ -581,23 +583,20 @@ public class ClickGuiScreen extends Screen {
             tooltipX = 5;
         }
 
-
-        int tooltipBgColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getSettingsPanelColor(), animationProgress * 0.9f);
+        int tooltipBgColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getSettingsPanelColor(),
+                animationProgress * 0.9f);
         drawRoundedRect(context, tooltipX, tooltipY, tooltipWidth, tooltipHeight, 6, tooltipBgColor);
-
 
         int borderColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getBorderColor(), animationProgress * 0.8f);
         drawRoundedRectOutline(context, tooltipX, tooltipY, tooltipWidth, tooltipHeight, 6, borderColor);
 
-
-        int headerColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getAccentColor(), (int) (animationProgress * 255)) | 0xFF000000;
+        int headerColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getAccentColor(), (int) (animationProgress * 255))
+                | 0xFF000000;
         context.drawText(textRenderer, moduleName, tooltipX + 8, tooltipY + 4, headerColor, false);
-
 
         int separatorY = tooltipY + 16;
         int separatorColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getSeparatorColor(), animationProgress);
         context.fill(tooltipX + 8, separatorY, tooltipX + tooltipWidth - 8, separatorY + 1, separatorColor);
-
 
         int textColor = RadiumGuiTheme.applyAlpha(0xFFCCCCCC, (int) (animationProgress * 255)) | 0xFF000000;
         int textY = separatorY + 4;
@@ -645,7 +644,8 @@ public class ClickGuiScreen extends Screen {
     }
 
     private void renderSettingsPanel(DrawContext context, int mouseX, int mouseY, float animationProgress) {
-        if (selectedModule == null) return;
+        if (selectedModule == null)
+            return;
 
         int cornerRadius = cachedCornerRadius;
 
@@ -660,8 +660,8 @@ public class ClickGuiScreen extends Screen {
         boolean isDragging = draggingPanel;
         boolean isHovered = isHovered(mouseX, mouseY, panelX, panelY, panelWidth, panelHeight);
 
-
-        int panelColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getSettingsPanelColor(), animationProgress * cachedPanelAlpha);
+        int panelColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getSettingsPanelColor(),
+                animationProgress * cachedPanelAlpha);
         if (isDragging) {
             panelColor = blendColors(panelColor, cachedAccentColor, 0.08f);
         } else if (isHovered) {
@@ -677,8 +677,8 @@ public class ClickGuiScreen extends Screen {
             borderColor = RadiumGuiTheme.applyAlpha(cachedAccentColor, animationProgress * 0.6f);
         }
 
-
-        int headerColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryHeader(), animationProgress * cachedPanelAlpha);
+        int headerColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryHeader(),
+                animationProgress * cachedPanelAlpha);
         drawRoundedRectTop(context, panelX, panelY, panelWidth, panelHeaderHeight, cornerRadius, headerColor);
 
         String headerText = selectedModule.getName() + " Settings";
@@ -689,23 +689,24 @@ public class ClickGuiScreen extends Screen {
                 RadiumGuiTheme.applyAlpha(cachedAccentColor, (int) (animationProgress * 255)) | 0xFF000000, false);
 
         int contentY = panelY + panelHeaderHeight;
-        context.enableScissor(panelX, contentY, panelX + panelWidth, contentY + visibleContentHeight);
+        enableScissor(panelX, contentY, panelWidth, visibleContentHeight);
 
         yOffset = contentTopPadding;
-        renderKeybindSetting(context, null, panelX + 10, contentY + yOffset - (int) settingsScrollOffset, mouseX, mouseY, animationProgress);
+        renderKeybindSetting(context, null, panelX + 10, contentY + yOffset - (int) settingsScrollOffset, mouseX,
+                mouseY, animationProgress);
         yOffset += settingHeight;
 
         for (var setting : selectedModule.getSettings()) {
-            renderSetting(context, setting, panelX + 10, contentY + yOffset - (int) settingsScrollOffset, mouseX, mouseY, animationProgress);
+            renderSetting(context, setting, panelX + 10, contentY + yOffset - (int) settingsScrollOffset, mouseX,
+                    mouseY, animationProgress);
             yOffset += settingHeight;
         }
 
-        context.disableScissor();
+        disableScissor();
 
         if (maxScroll > 0) {
             int scrollBarX = panelX + panelWidth - 6;
             int scrollBarWidth = 4;
-
 
             drawRoundedRect(context, scrollBarX, contentY, scrollBarWidth, visibleContentHeight, 2, 0x70000000);
 
@@ -722,13 +723,17 @@ public class ClickGuiScreen extends Screen {
     private void renderItemSelection(DrawContext context, int mouseX, int mouseY, float animationProgress) {
         int cornerRadius = cachedCornerRadius;
 
-        int bgColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getSettingsPanelColor(), animationProgress * RadiumGuiTheme.getPanelAlpha());
-        RenderUtils.fillRoundRect(context, itemPanelX, itemPanelY, itemPanelWidth, itemPanelHeight, cornerRadius, bgColor);
+        int bgColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getSettingsPanelColor(),
+                animationProgress * RadiumGuiTheme.getPanelAlpha());
+        RenderUtils.fillRoundRect(context, itemPanelX, itemPanelY, itemPanelWidth, itemPanelHeight, cornerRadius,
+                bgColor);
 
         int borderColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getAccentColor(), animationProgress * 0.4f);
-        RenderUtils.drawRoundRect(context, itemPanelX, itemPanelY, itemPanelWidth, itemPanelHeight, cornerRadius, borderColor);
+        RenderUtils.drawRoundRect(context, itemPanelX, itemPanelY, itemPanelWidth, itemPanelHeight, cornerRadius,
+                borderColor);
 
-        int headerColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryHeader(), animationProgress * RadiumGuiTheme.getPanelAlpha());
+        int headerColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryHeader(),
+                animationProgress * RadiumGuiTheme.getPanelAlpha());
         RenderUtils.fillRoundTabTop(context, itemPanelX, itemPanelY, itemPanelWidth, 30, cornerRadius, headerColor);
 
         String title = "Select Item";
@@ -746,12 +751,13 @@ public class ClickGuiScreen extends Screen {
         int searchBarWidth = itemPanelWidth - 20;
         int searchBarHeight = 20;
         boolean searchHovered = isHovered(mouseX, mouseY, searchBarX, searchBarY, searchBarWidth, searchBarHeight);
-        int searchBarColor = (itemSearchEditor.isActive() || searchHovered) ?
-                RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getHoverColor(), animationProgress * 0.5f) :
-                RadiumGuiTheme.applyAlpha(0x00000000, 0f);
+        int searchBarColor = (itemSearchEditor.isActive() || searchHovered)
+                ? RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getHoverColor(), animationProgress * 0.5f)
+                : RadiumGuiTheme.applyAlpha(0x00000000, 0f);
 
         int subRadius = Math.max(2, cornerRadius / 2);
-        RenderUtils.fillRoundRect(context, searchBarX, searchBarY, searchBarWidth, searchBarHeight, subRadius, searchBarColor);
+        RenderUtils.fillRoundRect(context, searchBarX, searchBarY, searchBarWidth, searchBarHeight, subRadius,
+                searchBarColor);
 
         String searchText = itemSearchEditor.getText();
         if (itemSearchEditor.isActive()) {
@@ -767,19 +773,18 @@ public class ClickGuiScreen extends Screen {
         int itemsStartY = itemPanelY + 60;
         int itemsHeight = itemPanelHeight - 70;
 
-
         int ITEM_SIZE = 20;
         int ITEM_PADDING = 3;
         int ITEMS_PER_ROW = 6;
 
-
         RenderUtils.fillRoundRect(context, itemPanelX + 5, itemsStartY, itemPanelWidth - 10, itemsHeight, subRadius,
                 RadiumGuiTheme.applyAlpha(0x00000000, 0f));
 
-        context.enableScissor(itemPanelX + 5, itemsStartY, itemPanelX + itemPanelWidth - 5, itemsStartY + itemsHeight);
+        enableScissor(itemPanelX + 5, itemsStartY, itemPanelWidth - 10, itemsHeight);
 
         List<Item> allItems = Registries.ITEM.stream()
-                .filter(item -> item != Items.AIR && item.getName().getString().toLowerCase().contains(itemSearchEditor.getText().toLowerCase()))
+                .filter(item -> item != Items.AIR
+                        && item.getName().getString().toLowerCase().contains(itemSearchEditor.getText().toLowerCase()))
                 .toList();
 
         int totalRows = (int) Math.ceil((double) allItems.size() / ITEMS_PER_ROW);
@@ -789,7 +794,6 @@ public class ClickGuiScreen extends Screen {
 
         int startIndex = rowScrollOffset * ITEMS_PER_ROW;
         int endIndex = Math.min(startIndex + (visibleRows * ITEMS_PER_ROW), allItems.size());
-
 
         int gridWidth = (ITEMS_PER_ROW * ITEM_SIZE) + ((ITEMS_PER_ROW - 1) * ITEM_PADDING);
         int gridStartX = itemPanelX + (itemPanelWidth - gridWidth) / 2;
@@ -819,9 +823,9 @@ public class ClickGuiScreen extends Screen {
                 RenderUtils.fillRoundRect(context, itemX, itemY, ITEM_SIZE, ITEM_SIZE, itemRadius, itemBgColor);
             }
 
-
             if (selected) {
-                int itemBorderColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getAccentColor(), animationProgress * 0.9f);
+                int itemBorderColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getAccentColor(),
+                        animationProgress * 0.9f);
                 RenderUtils.drawRoundRect(context, itemX, itemY, ITEM_SIZE, ITEM_SIZE, 2, itemBorderColor);
             }
 
@@ -829,7 +833,7 @@ public class ClickGuiScreen extends Screen {
             context.drawItem(itemStack, itemX, itemY);
         }
 
-        context.disableScissor();
+        disableScissor();
 
         if (maxRowScroll > 0) {
             int scrollBarX = itemPanelX + itemPanelWidth - 12;
@@ -838,7 +842,8 @@ public class ClickGuiScreen extends Screen {
             int scrollBarWidth = 4;
 
             int scrollBarBgColor = RadiumGuiTheme.applyAlpha(0x50000000, animationProgress);
-            RenderUtils.fillRoundRect(context, scrollBarX, scrollBarY, scrollBarWidth, scrollBarHeight, 2, scrollBarBgColor);
+            RenderUtils.fillRoundRect(context, scrollBarX, scrollBarY, scrollBarWidth, scrollBarHeight, 2,
+                    scrollBarBgColor);
 
             float scrollProgress = maxRowScroll > 0 ? (float) rowScrollOffset / maxRowScroll : 0f;
             int handleHeight = Math.max(20, (int) ((visibleRows / (float) totalRows) * scrollBarHeight));
@@ -849,7 +854,8 @@ public class ClickGuiScreen extends Screen {
         }
     }
 
-    private void renderKeybindSetting(DrawContext context, KeybindSetting setting, int x, int y, int mouseX, int mouseY, float animationProgress) {
+    private void renderKeybindSetting(DrawContext context, KeybindSetting setting, int x, int y, int mouseX, int mouseY,
+            float animationProgress) {
         int verticalCenter = y + (settingHeight - 8) / 2;
         int textColor = RadiumGuiTheme.applyAlpha(0xFFFFFFFF, (int) (animationProgress * 255)) | 0xFF000000;
 
@@ -859,10 +865,8 @@ public class ClickGuiScreen extends Screen {
             drawRoundedRect(context, x, y, panelWidth - 20, settingHeight, 3, bgColor);
         }
 
-
         String labelText = (setting != null) ? setting.getName() : "Keybind";
         context.drawText(textRenderer, labelText, x, verticalCenter, textColor, false);
-
 
         String buttonText;
         int buttonColor;
@@ -888,42 +892,37 @@ public class ClickGuiScreen extends Screen {
             }
         }
 
-
         int buttonHeight = settingHeight - 4;
         int buttonWidth = Math.max(60, textRenderer.getWidth(buttonText) + 10);
         int buttonX = x + panelWidth - 30 - buttonWidth;
         int buttonY = y + 2;
 
-
         drawRoundedRect(context, buttonX, buttonY, buttonWidth, buttonHeight, 5, buttonColor);
-
 
         int buttonTextX = buttonX + (buttonWidth - textRenderer.getWidth(buttonText)) / 2;
         int buttonTextY = buttonY + (buttonHeight - 8) / 2;
         context.drawText(textRenderer, buttonText, buttonTextX, buttonTextY, 0xFFFFFFFF, false);
     }
 
-    private void renderSetting(DrawContext context, Object setting, int x, int y, int mouseX, int mouseY, float animationProgress) {
+    private void renderSetting(DrawContext context, Object setting, int x, int y, int mouseX, int mouseY,
+            float animationProgress) {
         int textColor = RadiumGuiTheme.applyAlpha(0xFFFFFFFF, (int) (animationProgress * 255)) | 0xFF000000;
         int verticalCenter = y + (settingHeight - 8) / 2;
 
         if (setting instanceof BooleanSetting b) {
-            if (
-                    b.getName().equals("Execute Action") ||
-                            b.getName().equals("Set Pos 1") ||
-                            b.getName().equals("Set Pos 2") ||
-                            b.getName().equals("Start Mining") ||
-                            b.getName().equals("Stop Mining")
-            ) {
+            if (b.getName().equals("Execute Action") ||
+                    b.getName().equals("Set Pos 1") ||
+                    b.getName().equals("Set Pos 2") ||
+                    b.getName().equals("Start Mining") ||
+                    b.getName().equals("Stop Mining")) {
                 renderExecuteButton(context, b, x, y, mouseX, mouseY, animationProgress);
                 yOffset += 4;
                 return;
             }
             int boxSize = 12;
             int boxY = y + (settingHeight - boxSize) / 2;
-            int boxColor = b.getValue() ?
-                    RadiumGuiTheme.applyAlpha(cachedAccentColor, animationProgress) :
-                    RadiumGuiTheme.applyAlpha(0xFF555555, animationProgress * cachedPanelAlpha);
+            int boxColor = b.getValue() ? RadiumGuiTheme.applyAlpha(cachedAccentColor, animationProgress)
+                    : RadiumGuiTheme.applyAlpha(0xFF555555, animationProgress * cachedPanelAlpha);
 
             drawRoundedRect(context, x, boxY, boxSize, boxSize, 4, boxColor);
 
@@ -942,13 +941,15 @@ public class ClickGuiScreen extends Screen {
             renderItemSetting(context, itemSetting, x, y, mouseX, mouseY, animationProgress, textColor, verticalCenter);
 
         } else if (setting instanceof BlockSetting blockSetting) {
-            renderBlockSetting(context, blockSetting, x, y, mouseX, mouseY, animationProgress, textColor, verticalCenter);
+            renderBlockSetting(context, blockSetting, x, y, mouseX, mouseY, animationProgress, textColor,
+                    verticalCenter);
 
         } else if (setting instanceof ModeSetting<?> modeSetting) {
             renderModeSetting(context, modeSetting, x, y, mouseX, mouseY, animationProgress, textColor, verticalCenter);
 
         } else if (setting instanceof EnchantmentSetting enchantSetting) {
-            renderEnchantmentSetting(context, enchantSetting, x, y, mouseX, mouseY, animationProgress, textColor, verticalCenter);
+            renderEnchantmentSetting(context, enchantSetting, x, y, mouseX, mouseY, animationProgress, textColor,
+                    verticalCenter);
 
         } else if (setting instanceof KeybindSetting keybindSetting) {
             renderKeybindSetting(context, keybindSetting, x, y, mouseX, mouseY, animationProgress);
@@ -957,10 +958,12 @@ public class ClickGuiScreen extends Screen {
             renderDoubleSlider(context, d, x, y, mouseX, mouseY, animationProgress);
 
         } else if (setting instanceof ColorSetting colorSetting) {
-            renderColorSetting(context, colorSetting, x, y, mouseX, mouseY, animationProgress, textColor, verticalCenter);
+            renderColorSetting(context, colorSetting, x, y, mouseX, mouseY, animationProgress, textColor,
+                    verticalCenter);
 
         } else if (setting instanceof StringListSetting stringListSetting) {
-            renderStringListSetting(context, stringListSetting, x, y, mouseX, mouseY, animationProgress, textColor, verticalCenter);
+            renderStringListSetting(context, stringListSetting, x, y, mouseX, mouseY, animationProgress, textColor,
+                    verticalCenter);
 
         } else if (setting instanceof ProfileSetting profileSetting) {
             if (profileSetting.isExpanded()) {
@@ -971,22 +974,26 @@ public class ClickGuiScreen extends Screen {
         }
     }
 
-    private void renderBlockSetting(DrawContext context, BlockSetting blockSetting, int x, int y, int mouseX, int mouseY, float animationProgress, int textColor, int verticalCenter) {
+    private void renderBlockSetting(DrawContext context, BlockSetting blockSetting, int x, int y, int mouseX,
+            int mouseY, float animationProgress, int textColor, int verticalCenter) {
         String text = blockSetting.getName() + ": ";
         context.drawText(textRenderer, text, x, verticalCenter, textColor, false);
-        String valueText = blockSetting.getBlocks().isEmpty() ? "None selected" : blockSetting.getBlocks().size() + " block" + (blockSetting.getBlocks().size() != 1 ? "s" : "") + " selected";
+        String valueText = blockSetting.getBlocks().isEmpty() ? "None selected"
+                : blockSetting.getBlocks().size() + " block" + (blockSetting.getBlocks().size() != 1 ? "s" : "")
+                        + " selected";
         int valueX = x + textRenderer.getWidth(text);
         int boxHeight = settingHeight - 2;
         int boxWidth = panelWidth - 20 - textRenderer.getWidth(text);
         boolean hovered = isHovered(mouseX, mouseY, valueX - 2, y + 1, boxWidth + 4, boxHeight);
-        int boxColor = hovered ?
-                RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA) :
-                RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
+        int boxColor = hovered
+                ? RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA)
+                : RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
         drawRoundedRect(context, valueX - 2, y + 1, boxWidth + 4, boxHeight, 3, boxColor);
         context.drawText(textRenderer, valueText, valueX, verticalCenter, textColor, false);
     }
 
-    private void renderStringSetting(DrawContext context, StringSetting s, int x, int y, int mouseX, int mouseY, float animationProgress, int textColor, int verticalCenter) {
+    private void renderStringSetting(DrawContext context, StringSetting s, int x, int y, int mouseX, int mouseY,
+            float animationProgress, int textColor, int verticalCenter) {
         String text = s.getName() + ": ";
         context.drawText(textRenderer, text, x, verticalCenter, textColor, false);
 
@@ -1009,16 +1016,17 @@ public class ClickGuiScreen extends Screen {
         int boxWidth = panelWidth - 20 - textRenderer.getWidth(text);
 
         boolean boxHovered = isHovered(mouseX, mouseY, valueX - 2, y + 1, boxWidth + 4, boxHeight);
-        int boxColor = (editingString == s || boxHovered) ?
-                RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA) :
-                RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
+        int boxColor = (editingString == s || boxHovered)
+                ? RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA)
+                : RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
 
         drawRoundedRect(context, valueX - 2, y + 1, boxWidth + 4, boxHeight, 3, boxColor);
 
         context.drawText(textRenderer, valueText, valueX, verticalCenter, textColor, false);
     }
 
-    private void renderItemSetting(DrawContext context, ItemSetting itemSetting, int x, int y, int mouseX, int mouseY, float animationProgress, int textColor, int verticalCenter) {
+    private void renderItemSetting(DrawContext context, ItemSetting itemSetting, int x, int y, int mouseX, int mouseY,
+            float animationProgress, int textColor, int verticalCenter) {
         String text = itemSetting.getName() + ": ";
         context.drawText(textRenderer, text, x, verticalCenter, textColor, false);
 
@@ -1028,16 +1036,17 @@ public class ClickGuiScreen extends Screen {
         int boxWidth = panelWidth - 20 - textRenderer.getWidth(text);
 
         boolean hovered = isHovered(mouseX, mouseY, valueX - 2, y + 1, boxWidth + 4, boxHeight);
-        int boxColor = hovered ?
-                RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA) :
-                RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
+        int boxColor = hovered
+                ? RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA)
+                : RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
 
         drawRoundedRect(context, valueX - 2, y + 1, boxWidth + 4, boxHeight, 3, boxColor);
 
         context.drawText(textRenderer, valueText, valueX, verticalCenter, textColor, false);
     }
 
-    private void renderModeSetting(DrawContext context, ModeSetting<?> modeSetting, int x, int y, int mouseX, int mouseY, float animationProgress, int textColor, int verticalCenter) {
+    private void renderModeSetting(DrawContext context, ModeSetting<?> modeSetting, int x, int y, int mouseX,
+            int mouseY, float animationProgress, int textColor, int verticalCenter) {
         String text = modeSetting.getName() + ": ";
         context.drawText(textRenderer, text, x, verticalCenter, textColor, false);
 
@@ -1047,19 +1056,19 @@ public class ClickGuiScreen extends Screen {
         int boxWidth = panelWidth - 20 - textRenderer.getWidth(text);
 
         boolean hovered = isHovered(mouseX, mouseY, valueX - 2, y + 1, boxWidth + 4, boxHeight);
-        int boxColor = hovered ?
-                RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA) :
-                RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
+        int boxColor = hovered
+                ? RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA)
+                : RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
 
         drawRoundedRect(context, valueX - 2, y + 1, boxWidth + 4, boxHeight, 3, boxColor);
 
         context.drawText(textRenderer, valueText, valueX, verticalCenter, textColor, false);
     }
 
-    private void renderEnchantmentSetting(DrawContext context, EnchantmentSetting enchantSetting, int x, int y, int mouseX, int mouseY, float animationProgress, int textColor, int verticalCenter) {
+    private void renderEnchantmentSetting(DrawContext context, EnchantmentSetting enchantSetting, int x, int y,
+            int mouseX, int mouseY, float animationProgress, int textColor, int verticalCenter) {
         String text = enchantSetting.getName() + ": ";
         context.drawText(textRenderer, text, x, verticalCenter, textColor, false);
-
 
         int totalSelected = enchantSetting.getTotalCount();
 
@@ -1069,16 +1078,17 @@ public class ClickGuiScreen extends Screen {
         int boxWidth = panelWidth - 20 - textRenderer.getWidth(text);
 
         boolean hovered = isHovered(mouseX, mouseY, valueX - 2, y + 1, boxWidth + 4, boxHeight);
-        int boxColor = hovered ?
-                RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA) :
-                RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
+        int boxColor = hovered
+                ? RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA)
+                : RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
 
         drawRoundedRect(context, valueX - 2, y + 1, boxWidth + 4, boxHeight, 3, boxColor);
 
         context.drawText(textRenderer, valueText, valueX, verticalCenter, textColor, false);
     }
 
-    private void renderColorSetting(DrawContext context, ColorSetting colorSetting, int x, int y, int mouseX, int mouseY, float animationProgress, int textColor, int verticalCenter) {
+    private void renderColorSetting(DrawContext context, ColorSetting colorSetting, int x, int y, int mouseX,
+            int mouseY, float animationProgress, int textColor, int verticalCenter) {
         String text = colorSetting.getName() + ": ";
         context.drawText(textRenderer, text, x, verticalCenter, textColor, false);
 
@@ -1091,9 +1101,9 @@ public class ClickGuiScreen extends Screen {
         int colorPreviewSize = boxHeight - 4;
 
         boolean hovered = isHovered(mouseX, mouseY, valueX - 2, y + 1, boxWidth + 4, boxHeight);
-        int boxColor = hovered ?
-                RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA) :
-                RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
+        int boxColor = hovered
+                ? RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA)
+                : RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
 
         drawRoundedRect(context, valueX - 2, y + 1, boxWidth + 4, boxHeight, 3, boxColor);
 
@@ -1105,7 +1115,8 @@ public class ClickGuiScreen extends Screen {
         context.drawText(textRenderer, valueText, textX, verticalCenter, textColor, false);
     }
 
-    private void renderStringListSetting(DrawContext context, StringListSetting setting, int x, int y, int mouseX, int mouseY, float animationProgress, int textColor, int verticalCenter) {
+    private void renderStringListSetting(DrawContext context, StringListSetting setting, int x, int y, int mouseX,
+            int mouseY, float animationProgress, int textColor, int verticalCenter) {
         String text = setting.getName() + ": ";
         context.drawText(textRenderer, text, x, verticalCenter, textColor, false);
 
@@ -1119,24 +1130,28 @@ public class ClickGuiScreen extends Screen {
         int boxWidth = panelWidth - 20 - textRenderer.getWidth(text);
 
         boolean hovered = isHovered(mouseX, mouseY, valueX - 2, y + 1, boxWidth + 4, boxHeight);
-        int boxColor = hovered ?
-                RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA) :
-                RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
+        int boxColor = hovered
+                ? RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA)
+                : RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
 
         drawRoundedRect(context, valueX - 2, y + 1, boxWidth + 4, boxHeight, 3, boxColor);
         context.drawText(textRenderer, valueText, valueX, verticalCenter, textColor, false);
     }
 
-    private void renderExecuteButton(DrawContext context, BooleanSetting setting, int x, int y, int mouseX, int mouseY, float animationProgress) {
+    private void renderExecuteButton(DrawContext context, BooleanSetting setting, int x, int y, int mouseX, int mouseY,
+            float animationProgress) {
         boolean hovered = isHovered(mouseX, mouseY, x, y, panelWidth - 20, settingHeight);
 
         int color = hovered ? cachedAccentColor : 0xFF555555;
-        drawRoundedRect(context, x, y, panelWidth - 20, settingHeight, 5, RadiumGuiTheme.applyAlpha(color, animationProgress));
+        drawRoundedRect(context, x, y, panelWidth - 20, settingHeight, 5,
+                RadiumGuiTheme.applyAlpha(color, animationProgress));
 
-        context.drawCenteredTextWithShadow(textRenderer, setting.getName(), x + (panelWidth - 20) / 2, y + (settingHeight - 8) / 2, 0xFFFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, setting.getName(), x + (panelWidth - 20) / 2,
+                y + (settingHeight - 8) / 2, 0xFFFFFFFF);
     }
 
-    private void renderProfileSetting(DrawContext context, ProfileSetting setting, int x, int y, int mouseX, int mouseY, float animationProgress) {
+    private void renderProfileSetting(DrawContext context, ProfileSetting setting, int x, int y, int mouseX, int mouseY,
+            float animationProgress) {
         int textColor = RadiumGuiTheme.applyAlpha(0xFFFFFFFF, (int) (animationProgress * 255)) | 0xFF000000;
         int verticalCenter = y + (settingHeight - 8) / 2;
         String text = setting.getName() + ": ";
@@ -1149,9 +1164,9 @@ public class ClickGuiScreen extends Screen {
         int boxWidth = panelWidth - 20 - textWidth;
 
         boolean hovered = isHovered(mouseX, mouseY, valueX - 2, y + 1, boxWidth + 4, boxHeight);
-        int boxColor = hovered || setting.isExpanded() ?
-                RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA) :
-                RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
+        int boxColor = hovered || setting.isExpanded()
+                ? RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA)
+                : RadiumGuiTheme.applyAlpha(0xFF333333, animationProgress * cachedPanelAlpha);
 
         drawRoundedRect(context, valueX - 2, y + 1, boxWidth + 4, boxHeight, 3, boxColor);
 
@@ -1166,7 +1181,8 @@ public class ClickGuiScreen extends Screen {
             for (String profile : setting.getProfiles()) {
                 boolean itemHovered = isHovered(mouseX, mouseY, valueX - 2, itemY, boxWidth + 4, 12);
                 if (itemHovered) {
-                    context.fill(valueX - 2, itemY, valueX - 2 + boxWidth + 4, itemY + 12, RadiumGuiTheme.applyAlpha(cachedAccentColor, animationProgress));
+                    context.fill(valueX - 2, itemY, valueX - 2 + boxWidth + 4, itemY + 12,
+                            RadiumGuiTheme.applyAlpha(cachedAccentColor, animationProgress));
                 }
                 context.drawText(textRenderer, profile, valueX, itemY + 2, textColor, false);
                 itemY += 12;
@@ -1174,7 +1190,8 @@ public class ClickGuiScreen extends Screen {
         }
     }
 
-    private void renderSlider(DrawContext context, SliderSetting setting, int x, int y, int mouseX, int mouseY, float animationProgress) {
+    private void renderSlider(DrawContext context, SliderSetting setting, int x, int y, int mouseX, int mouseY,
+            float animationProgress) {
         String nameText = setting.getName();
 
         String valueText = String.valueOf((long) setting.getValue().doubleValue());
@@ -1210,7 +1227,8 @@ public class ClickGuiScreen extends Screen {
         }
     }
 
-    private void renderNumberSlider(DrawContext context, NumberSetting setting, int x, int y, int mouseX, int mouseY, float animationProgress) {
+    private void renderNumberSlider(DrawContext context, NumberSetting setting, int x, int y, int mouseX, int mouseY,
+            float animationProgress) {
         String nameText = setting.getName();
 
         String valueText = String.valueOf((long) setting.getValue().doubleValue());
@@ -1247,9 +1265,9 @@ public class ClickGuiScreen extends Screen {
         }
     }
 
-    private void renderDoubleSlider(DrawContext context, DoubleSetting setting, int x, int y, int mouseX, int mouseY, float animationProgress) {
+    private void renderDoubleSlider(DrawContext context, DoubleSetting setting, int x, int y, int mouseX, int mouseY,
+            float animationProgress) {
         String nameText = setting.getName();
-
 
         String valueText = String.format("%.2f", setting.getValue());
         int valueWidth = textRenderer.getWidth(valueText);
@@ -1280,7 +1298,6 @@ public class ClickGuiScreen extends Screen {
             if (isHovered(mouseX, mouseY, x, y, 150, 20)) {
                 double newPosition = Math.max(0.0, Math.min(1.0, (double) (mouseX - x) / 150));
                 double newValue = setting.getMin() + (setting.getMax() - setting.getMin()) * newPosition;
-
 
                 newValue = Math.round(newValue * 100.0) / 100.0;
 
@@ -1316,7 +1333,8 @@ public class ClickGuiScreen extends Screen {
         RenderUtils.fillRoundTabBottom(context, x, y, 115, 15, radius, color);
     }
 
-    private void drawRoundedRectOutline(DrawContext context, int x, int y, int width, int height, int radius, int color) {
+    private void drawRoundedRectOutline(DrawContext context, int x, int y, int width, int height, int radius,
+            int color) {
         if (radius <= 0) {
             context.fill(x, y, x + width, y + 1, color);
             context.fill(x, y + height - 1, x + width, y + height, color);
@@ -1325,12 +1343,12 @@ public class ClickGuiScreen extends Screen {
             return;
         }
 
-
         RenderUtils.drawRoundRect(context, x, y, width, height, radius, color);
     }
 
     private List<Module> getModules(Module.Category cat) {
-        if (RadiumClient.moduleManager == null) return List.of();
+        if (RadiumClient.moduleManager == null)
+            return List.of();
 
         if (cat == Module.Category.SEARCH) {
             return getSearchModules();
@@ -1343,8 +1361,10 @@ public class ClickGuiScreen extends Screen {
     }
 
     private List<Module> getSearchModules() {
-        if (RadiumClient.moduleManager == null) return List.of();
-        if (moduleSearchEditor.getText().isEmpty()) return List.of();
+        if (RadiumClient.moduleManager == null)
+            return List.of();
+        if (moduleSearchEditor.getText().isEmpty())
+            return List.of();
 
         String query = moduleSearchEditor.getText().toLowerCase();
         return RadiumClient.moduleManager.getModules().stream()
@@ -1357,7 +1377,8 @@ public class ClickGuiScreen extends Screen {
                 .toList();
     }
 
-    private void renderSearchCategory(DrawContext context, Module.Category cat, int x, int y, int mouseX, int mouseY, float animationProgress) {
+    private void renderSearchCategory(DrawContext context, Module.Category cat, int x, int y, int mouseX, int mouseY,
+            float animationProgress) {
         boolean expanded = categoryExpanded.get(cat);
         int cornerRadius = cachedCornerRadius;
         int searchBarHeight = 25;
@@ -1378,8 +1399,8 @@ public class ClickGuiScreen extends Screen {
             hoveredCategory = cat;
         }
 
-
-        int categoryBgColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryBackground(), animationProgress * cachedPanelAlpha);
+        int categoryBgColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryBackground(),
+                animationProgress * cachedPanelAlpha);
 
         if (isDragging) {
             categoryBgColor = blendColors(categoryBgColor, cachedAccentColor, 0.15f);
@@ -1396,9 +1417,9 @@ public class ClickGuiScreen extends Screen {
             borderColor = RadiumGuiTheme.applyAlpha(cachedAccentColor, animationProgress * 0.6f);
         }
 
-
         boolean headerHovered = isHovered(mouseX, mouseY, x, y, categoryWidth, headerHeight);
-        int headerColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryHeader(), animationProgress * cachedPanelAlpha);
+        int headerColor = RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getCategoryHeader(),
+                animationProgress * cachedPanelAlpha);
 
         drawRoundedRectTop(context, x, y, categoryWidth, headerHeight, cornerRadius, headerColor);
 
@@ -1428,11 +1449,13 @@ public class ClickGuiScreen extends Screen {
             int searchBarX = x + 2;
             int searchBarWidth = categoryWidth - 4;
             boolean searchHovered = isHovered(mouseX, mouseY, searchBarX, searchBarY, searchBarWidth, searchBarHeight);
-            int searchBarColor = (moduleSearchEditor.isActive() || searchHovered) ?
-                    RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA) :
-                    RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getModuleBackground(), animationProgress * cachedPanelAlpha);
+            int searchBarColor = (moduleSearchEditor.isActive() || searchHovered)
+                    ? RadiumGuiTheme.applyAlpha(cachedHoverColor, animationProgress * RadiumGuiTheme.HOVER_ALPHA)
+                    : RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getModuleBackground(),
+                            animationProgress * cachedPanelAlpha);
 
-            drawRoundedRect(context, searchBarX, searchBarY, searchBarWidth, searchBarHeight, cornerRadius, searchBarColor);
+            drawRoundedRect(context, searchBarX, searchBarY, searchBarWidth, searchBarHeight, cornerRadius,
+                    searchBarColor);
 
             String searchText = moduleSearchEditor.getText();
             if (moduleSearchEditor.isActive()) {
@@ -1508,13 +1531,11 @@ public class ClickGuiScreen extends Screen {
             }
         }
 
-
         if (colorPickerPanel.isOpen()) {
             if (colorPickerPanel.handleClick(mx, my, button)) {
                 return true;
             }
         }
-
 
         if (stringListPanel.isOpen()) {
             if (stringListPanel.handleClick(mx, my, button)) {
@@ -1561,14 +1582,14 @@ public class ClickGuiScreen extends Screen {
             int itemsStartY = itemPanelY + 70;
             int itemsHeight = itemPanelHeight - 80;
 
-
             int ITEM_SIZE = 20;
             int ITEM_PADDING = 3;
             int ITEMS_PER_ROW = 6;
 
             if (isHovered((int) mx, (int) my, itemPanelX + 5, itemsStartY, itemPanelWidth - 10, itemsHeight)) {
                 List<Item> allItems = Registries.ITEM.stream()
-                        .filter(item -> item != Items.AIR && item.getName().getString().toLowerCase().contains(itemSearchEditor.getText().toLowerCase()))
+                        .filter(item -> item != Items.AIR && item.getName().getString().toLowerCase()
+                                .contains(itemSearchEditor.getText().toLowerCase()))
                         .toList();
 
                 int totalRows = (int) Math.ceil((double) allItems.size() / ITEMS_PER_ROW);
@@ -1590,11 +1611,9 @@ public class ClickGuiScreen extends Screen {
                 int gridWidth = (ITEMS_PER_ROW * ITEM_SIZE) + ((ITEMS_PER_ROW - 1) * ITEM_PADDING);
                 int gridStartX = itemPanelX + (itemPanelWidth - gridWidth) / 2;
 
-
                 if (mx >= gridStartX && mx < gridStartX + gridWidth && mx < scrollBarX) {
                     int clickedCol = (int) ((mx - gridStartX) / (ITEM_SIZE + ITEM_PADDING));
                     int clickedRow = (int) ((my - (itemsStartY + 5)) / (ITEM_SIZE + ITEM_PADDING));
-
 
                     int cellX = gridStartX + clickedCol * (ITEM_SIZE + ITEM_PADDING);
                     int cellY = itemsStartY + 5 + clickedRow * (ITEM_SIZE + ITEM_PADDING);
@@ -1654,9 +1673,7 @@ public class ClickGuiScreen extends Screen {
                     selectedModule instanceof com.radium.client.modules.misc.SchematicBuilder) {
                 client.execute(() -> client.setScreen(
                         new com.radium.client.gui.SchematicBrowserScreen(
-                                (com.radium.client.modules.misc.SchematicBuilder) selectedModule
-                        )
-                ));
+                                (com.radium.client.modules.misc.SchematicBuilder) selectedModule)));
                 return true;
             }
             editingString = clickedStringSetting;
@@ -1686,13 +1703,13 @@ public class ClickGuiScreen extends Screen {
 
             int contentY = panelY + panelHeaderHeight;
             if (isHovered((int) mx, (int) my, panelX, contentY, panelWidth, visibleContentHeight)) {
-                if (maxScroll > 0 && isHovered((int) mx, (int) my, panelX + panelWidth - 6, contentY, 6, visibleContentHeight)) {
+                if (maxScroll > 0
+                        && isHovered((int) mx, (int) my, panelX + panelWidth - 6, contentY, 6, visibleContentHeight)) {
                     draggingScrollBar = true;
                     return true;
                 }
 
                 int yOffset = contentY + contentTopPadding - (int) settingsScrollOffset;
-
 
                 if (isHovered((int) mx, (int) my, panelX + 10, yOffset, panelWidth - 20, settingHeight)) {
                     String buttonText = KeybindManager.getKeyName(selectedModule.getKeyBind());
@@ -1777,7 +1794,8 @@ public class ClickGuiScreen extends Screen {
                                 int valueX = panelX + 10 + textWidth;
                                 int boxWidth = panelWidth - 20 - textWidth;
 
-                                if (isHovered((int) mx, (int) my, valueX - 2, yOffset + 1, boxWidth + 4, settingHeight - 2)) {
+                                if (isHovered((int) mx, (int) my, valueX - 2, yOffset + 1, boxWidth + 4,
+                                        settingHeight - 2)) {
                                     profileSetting.setExpanded(!profileSetting.isExpanded());
                                     return true;
                                 }
@@ -1840,12 +1858,11 @@ public class ClickGuiScreen extends Screen {
                                 selectedModule = wasSameModule ? null : m;
                                 if (!wasSameModule) {
                                     settingsScrollOffset = 0;
-                                    if (categoryX.containsKey(Module.Category.CLIENT)) {
-                                        panelX = categoryX.get(Module.Category.CLIENT);
-                                        panelY = categoryY.get(Module.Category.CLIENT) + 200;
-                                        panelTargetX = panelX;
-                                        panelTargetY = panelY;
-                                    }
+                                    settingsScrollOffset = 0;
+                                    panelX = 50;
+                                    panelY = 50;
+                                    panelTargetX = panelX;
+                                    panelTargetY = panelY;
                                 }
                             }
                             return true;
@@ -1854,7 +1871,8 @@ public class ClickGuiScreen extends Screen {
                     }
                 }
 
-                if (moduleSearchEditor.isActive() && !isHovered((int) mx, (int) my, searchBarX, searchBarY, searchBarWidth, searchBarHeight)) {
+                if (moduleSearchEditor.isActive()
+                        && !isHovered((int) mx, (int) my, searchBarX, searchBarY, searchBarWidth, searchBarHeight)) {
                     moduleSearchEditor.stopEditing();
                     searchScrollOffset = 0;
                 }
@@ -1886,12 +1904,11 @@ public class ClickGuiScreen extends Screen {
                             selectedModule = wasSameModule ? null : m;
                             if (!wasSameModule) {
                                 settingsScrollOffset = 0;
-                                if (categoryX.containsKey(Module.Category.CLIENT)) {
-                                    panelX = categoryX.get(Module.Category.CLIENT);
-                                    panelY = categoryY.get(Module.Category.CLIENT) + 200;
-                                    panelTargetX = panelX;
-                                    panelTargetY = panelY;
-                                }
+                                settingsScrollOffset = 0;
+                                panelX = 50;
+                                panelY = 50;
+                                panelTargetX = panelX;
+                                panelTargetY = panelY;
                             }
                         }
                         return true;
@@ -1925,13 +1942,11 @@ public class ClickGuiScreen extends Screen {
             }
         }
 
-
         if (colorPickerPanel.isOpen()) {
             if (colorPickerPanel.handleDrag(mx, my, button, dx, dy)) {
                 return true;
             }
         }
-
 
         if (stringListPanel.isOpen()) {
             if (stringListPanel.handleDrag(mx, my, button, dx, dy)) {
@@ -1956,7 +1971,10 @@ public class ClickGuiScreen extends Screen {
             int newY = (int) my - panelDragOffsetY;
 
             panelX = Math.max(0, Math.min(width - panelWidth, newX));
-            panelY = Math.max(0, Math.min(height - (panelHeaderHeight + Math.min((selectedModule.getSettings().size() + 1) * settingHeight + 10, maxPanelHeight) + 10), newY));
+            panelY = Math.max(0,
+                    Math.min(height - (panelHeaderHeight
+                            + Math.min((selectedModule.getSettings().size() + 1) * settingHeight + 10, maxPanelHeight)
+                            + 10), newY));
 
             panelTargetX = panelX;
             panelTargetY = panelY;
@@ -2000,20 +2018,17 @@ public class ClickGuiScreen extends Screen {
         mx = scaleInput(mx);
         my = scaleInput(my);
 
-
         if (enchantmentPanel.isOpen()) {
             if (enchantmentPanel.handleRelease(mx, my, button)) {
                 return true;
             }
         }
 
-
         if (colorPickerPanel.isOpen()) {
             if (colorPickerPanel.handleRelease(mx, my, button)) {
                 return true;
             }
         }
-
 
         if (stringListPanel.isOpen()) {
             if (stringListPanel.handleRelease(mx, my, button)) {
@@ -2083,7 +2098,8 @@ public class ClickGuiScreen extends Screen {
                 int searchBarY = 50;
                 int searchBarHeight = 25;
                 int searchContentHeight = maxVisibleModules * moduleHeight;
-                if (isHovered((int) mouseX, (int) mouseY, 5, searchBarY + searchBarHeight, categoryWidth - 10, searchContentHeight)) {
+                if (isHovered((int) mouseX, (int) mouseY, 5, searchBarY + searchBarHeight, categoryWidth - 10,
+                        searchContentHeight)) {
                     searchScrollOffset -= (int) verticalAmount * 3;
                     searchScrollOffset = Math.max(0, Math.min(searchScrollOffset, maxScroll));
                     return true;
@@ -2094,7 +2110,8 @@ public class ClickGuiScreen extends Screen {
         if (editingItem != null) {
             if (isHovered((int) mouseX, (int) mouseY, itemPanelX, itemPanelY, itemPanelWidth, itemPanelHeight)) {
                 List<Item> allItems = Registries.ITEM.stream()
-                        .filter(item -> item != Items.AIR && item.getName().getString().toLowerCase().contains(itemSearchEditor.getText().toLowerCase()))
+                        .filter(item -> item != Items.AIR && item.getName().getString().toLowerCase()
+                                .contains(itemSearchEditor.getText().toLowerCase()))
                         .toList();
 
                 int itemsHeight = itemPanelHeight - 80;
@@ -2144,13 +2161,11 @@ public class ClickGuiScreen extends Screen {
             }
         }
 
-
         if (colorPickerPanel.isOpen()) {
             if (colorPickerPanel.handleKeyPress(keyCode, scanCode, modifiers)) {
                 return true;
             }
         }
-
 
         if (stringListPanel.isOpen()) {
             if (stringListPanel.handleKeyPress(keyCode, scanCode, modifiers)) {
@@ -2212,7 +2227,6 @@ public class ClickGuiScreen extends Screen {
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-
     @Override
     public boolean charTyped(char chr, int modifiers) {
         if (blockSelectionPanel.isOpen()) {
@@ -2227,13 +2241,11 @@ public class ClickGuiScreen extends Screen {
             }
         }
 
-
         if (colorPickerPanel.isOpen()) {
             if (colorPickerPanel.handleCharType(chr, modifiers)) {
                 return true;
             }
         }
-
 
         if (stringListPanel.isOpen()) {
             if (stringListPanel.handleCharType(chr, modifiers)) {
@@ -2262,5 +2274,26 @@ public class ClickGuiScreen extends Screen {
     @Override
     public boolean shouldPause() {
         return false;
+    }
+
+    private void enableScissor(int x, int y, int width, int height) {
+        double scale = 2.0;
+        int windowHeight = client.getWindow().getFramebufferHeight();
+
+        int scissorX = (int) (x * scale);
+        // OpenGL scissor uses bottom-left origin.
+        // We need to invert Y. (y + height) is the bottom of the rect in GUI variance
+        // (top-left origin).
+        // scaled bottom = (y + height) * scale.
+        // glScissor Y = windowHeight - scaledBottom.
+        int scissorY = (int) (windowHeight - (y + height) * scale);
+        int scissorWidth = (int) (width * scale);
+        int scissorHeight = (int) (height * scale);
+
+        RenderSystem.enableScissor(scissorX, scissorY, scissorWidth, scissorHeight);
+    }
+
+    private void disableScissor() {
+        RenderSystem.disableScissor();
     }
 }

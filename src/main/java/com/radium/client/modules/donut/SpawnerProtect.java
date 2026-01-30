@@ -11,7 +11,7 @@ import com.radium.client.modules.client.Friends;
 import com.radium.client.modules.misc.AutoReconnect;
 import com.radium.client.utils.Character.RotateCharacter;
 import com.radium.client.utils.ChatUtils;
-import com.radium.client.utils.WebhookUtils;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.Enchantment;
@@ -40,10 +40,6 @@ public class SpawnerProtect extends Module implements TickListener, GameRenderLi
 
     private final BooleanSetting fastMode = new BooleanSetting("Fast Mode", true);
     private final NumberSetting emergencyDistance = new NumberSetting("Emergency Distance", 5.0, 1.0, 50.0, 0.5);
-    private final BooleanSetting webhookEnabled = new BooleanSetting("Webhook", false);
-    private final StringSetting webhookUrl = new StringSetting("Webhook URL", "");
-    private final BooleanSetting selfPing = new BooleanSetting("Self Ping", false);
-    private final StringSetting discordId = new StringSetting("Discord ID", "");
 
     ProtectState state = ProtectState.CHECKING;
     boolean foundPlayer = false;
@@ -66,8 +62,10 @@ public class SpawnerProtect extends Module implements TickListener, GameRenderLi
     private int coordChangeCooldown = 0;
 
     public SpawnerProtect() {
-        super("SpawnerProtect", "Breaks all spawners around you when players are nearby and dumps your inventory in an e-chest", Category.DONUT);
-        addSettings(fastMode, emergencyDistance, webhookEnabled, webhookUrl, selfPing, discordId);
+        super("SpawnerProtect",
+                "Breaks all spawners around you when players are nearby and dumps your inventory in an e-chest",
+                Category.DONUT);
+        addSettings(fastMode, emergencyDistance);
     }
 
     @Override
@@ -132,7 +130,8 @@ public class SpawnerProtect extends Module implements TickListener, GameRenderLi
 
     @Override
     public void onGameRender(GameRenderEvent event) {
-        if (mc.world == null || mc.player == null) return;
+        if (mc.world == null || mc.player == null)
+            return;
 
         if (state == ProtectState.MINING || state == ProtectState.OPENENDERCHEST) {
             rotateChar.update(true, fastMode.getValue());
@@ -140,7 +139,8 @@ public class SpawnerProtect extends Module implements TickListener, GameRenderLi
     }
 
     void checkForCoordinateChange() {
-        if (mc.player == null) return;
+        if (mc.player == null)
+            return;
 
         BlockPos currentPosition = mc.player.getBlockPos();
 
@@ -185,13 +185,18 @@ public class SpawnerProtect extends Module implements TickListener, GameRenderLi
         AutoReconnect autoReconnect = RadiumClient.moduleManager.getModule(AutoReconnect.class);
 
         for (PlayerEntity player : mc.world.getPlayers()) {
-            if (player == mc.player) continue;
+            if (player == mc.player)
+                continue;
 
             String name = player.getGameProfile().getName();
-            if (name.equalsIgnoreCase(selfName) || name.equalsIgnoreCase("venom")) continue;
-            if (player.isSpectator()) continue;
-            if (player == null) continue;
-            if (friends != null && friends.isFriend(name)) continue;
+            if (name.equalsIgnoreCase(selfName) || name.equalsIgnoreCase("venom"))
+                continue;
+            if (player.isSpectator())
+                continue;
+            if (player == null)
+                continue;
+            if (friends != null && friends.isFriend(name))
+                continue;
 
             if (autoReconnect != null && autoReconnect.isEnabled()) {
                 autoReconnect.toggle();
@@ -200,13 +205,14 @@ public class SpawnerProtect extends Module implements TickListener, GameRenderLi
             double distance = mc.player.distanceTo(player);
 
             if (emergencyDistance.getValue() > 0 && distance <= emergencyDistance.getValue()) {
-                sendWebhook(name, distance);
-                disconnect("Emergency Distance Triggered! Player: " + name + " (" + String.format("%.1f", distance) + " blocks)");
+
+                disconnect("Emergency Distance Triggered! Player: " + name + " (" + String.format("%.1f", distance)
+                        + " blocks)");
                 return;
             }
 
             ChatUtils.m("Player Detected: " + name);
-            sendWebhook(name, distance);
+
             foundPlayer = true;
             state = ProtectState.FINDSPAWNER;
             return;
@@ -406,13 +412,11 @@ public class SpawnerProtect extends Module implements TickListener, GameRenderLi
                         Vec3d.ofCenter(enderChestPos),
                         Direction.UP,
                         enderChestPos,
-                        false
-                );
+                        false);
                 mc.interactionManager.interactBlock(
                         mc.player,
                         Hand.MAIN_HAND,
-                        hitResult
-                );
+                        hitResult);
                 hasOpenedChest = true;
                 dumpDelay = 10;
                 ChatUtils.m("Opening E-Chest");
@@ -447,8 +451,7 @@ public class SpawnerProtect extends Module implements TickListener, GameRenderLi
                     screenSlot,
                     0,
                     SlotActionType.QUICK_MOVE,
-                    mc.player
-            );
+                    mc.player);
             dumpSlot++;
         } else {
             ChatUtils.m("Dumped Inventory");
@@ -465,29 +468,6 @@ public class SpawnerProtect extends Module implements TickListener, GameRenderLi
         }
     }
 
-    private void sendWebhook(String playerName, double distance) {
-        if (!webhookEnabled.getValue() || webhookUrl.getValue().trim().isEmpty()) {
-            return;
-        }
-
-        String selfPingId = "";
-        if (selfPing.getValue() && !discordId.getValue().trim().isEmpty()) {
-            selfPingId = discordId.getValue().trim();
-        }
-
-        BlockPos pos = mc.player.getBlockPos();
-        new WebhookUtils(webhookUrl.getValue())
-                .setTitle("Player Detected!")
-                .setDescription("A player was detected near spawners")
-                .setSelfPing(selfPingId)
-                .addUsername(playerName)
-                .addCoords(pos)
-                .addField("Distance", String.format("%.2f blocks", distance), true)
-                .addServer()
-                .addTime()
-                .send();
-    }
-
     private void disconnect(final String text) {
         this.toggle();
         mc.player.networkHandler.onDisconnect(new DisconnectS2CPacket(Text.literal("SpawnerProtect | " + text)));
@@ -495,7 +475,8 @@ public class SpawnerProtect extends Module implements TickListener, GameRenderLi
 
     @Override
     public void onTick2() {
-        if (mc.world == null || mc.player == null) return;
+        if (mc.world == null || mc.player == null)
+            return;
 
         checkForCoordinateChange();
 

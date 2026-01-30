@@ -5,9 +5,8 @@ import com.mojang.authlib.GameProfile;
 import com.radium.client.client.RadiumClient;
 import com.radium.client.gui.utils.TextEditor;
 import com.radium.client.systems.accounts.Account;
-import com.radium.client.systems.accounts.MicrosoftLogin;
 import com.radium.client.systems.accounts.types.CrackedAccount;
-import com.radium.client.systems.accounts.types.MicrosoftAccount;
+
 import com.radium.client.utils.render.RenderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -91,10 +90,13 @@ public class AccountManagerScreen extends Screen {
 
         float animDelta = delta * 12f;
         boolean windowHovered = isHovered(mouseX, mouseY, windowX, windowY, windowWidth, windowHeight);
-        windowHoverProgress = Math.max(0f, Math.min(1f, windowHoverProgress + (windowHovered ? animDelta : -animDelta)));
+        windowHoverProgress = Math.max(0f,
+                Math.min(1f, windowHoverProgress + (windowHovered ? animDelta : -animDelta)));
 
-        if (statusTicks > 0) statusTicks--;
-        if (statusTicks == 0) statusMessage = "";
+        if (statusTicks > 0)
+            statusTicks--;
+        if (statusTicks == 0)
+            statusMessage = "";
 
         drawMainWindow(context, mouseX, mouseY, animationProgress);
 
@@ -111,10 +113,12 @@ public class AccountManagerScreen extends Screen {
 
         int glowColor = RadiumGuiTheme.applyAlpha(accentBase, animationProgress * windowHoverProgress * 0.15f);
         if (glowColor != 0) {
-            RenderUtils.drawRoundRect(context, windowX + 1, windowY + 1, windowWidth - 2, windowHeight - 2, cornerRadius - 1, glowColor);
+            RenderUtils.drawRoundRect(context, windowX + 1, windowY + 1, windowWidth - 2, windowHeight - 2,
+                    cornerRadius - 1, glowColor);
         }
 
-        int borderColor = RadiumGuiTheme.applyAlpha(accentBase, animationProgress * (0.7f + windowHoverProgress * 0.3f));
+        int borderColor = RadiumGuiTheme.applyAlpha(accentBase,
+                animationProgress * (0.7f + windowHoverProgress * 0.3f));
         RenderUtils.drawRoundRect(context, windowX, windowY, windowWidth, windowHeight, cornerRadius, borderColor);
 
         int headerBg = RadiumGuiTheme.applyAlpha(darkAccent, animationProgress * 0.4f);
@@ -122,7 +126,8 @@ public class AccountManagerScreen extends Screen {
 
         String titleText = "Account Manager";
         int titleColor = RadiumGuiTheme.applyAlpha(0xFFFFFFFF, animationProgress);
-        context.drawText(textRenderer, titleText, windowX + (windowWidth - textRenderer.getWidth(titleText)) / 2, windowY + (headerHeight - 8) / 2, titleColor, false);
+        context.drawText(textRenderer, titleText, windowX + (windowWidth - textRenderer.getWidth(titleText)) / 2,
+                windowY + (headerHeight - 8) / 2, titleColor, false);
 
         drawSidebar(context, mouseX, mouseY, animationProgress);
         drawContent(context, mouseX, mouseY, animationProgress);
@@ -131,7 +136,9 @@ public class AccountManagerScreen extends Screen {
             int alpha = (int) (Math.min(1f, statusTicks / 20f) * 255 * animationProgress);
             int color = (alpha << 24) | (statusColor & 0xFFFFFF);
             int sw = textRenderer.getWidth(statusMessage);
-            context.drawText(textRenderer, statusMessage, windowX + sidebarWidth + (windowWidth - sidebarWidth - sw) / 2, windowY + windowHeight - 15, color, false);
+            context.drawText(textRenderer, statusMessage,
+                    windowX + sidebarWidth + (windowWidth - sidebarWidth - sw) / 2, windowY + windowHeight - 15, color,
+                    false);
         }
     }
 
@@ -152,7 +159,8 @@ public class AccountManagerScreen extends Screen {
         drawPlayerInfo(context, sx, sy + sh - 30, animationProgress);
     }
 
-    private void drawTabButton(DrawContext context, SideTab tab, int x, int y, int mouseX, int mouseY, float animationProgress) {
+    private void drawTabButton(DrawContext context, SideTab tab, int x, int y, int mouseX, int mouseY,
+            float animationProgress) {
         int width = sidebarWidth - padding;
         boolean active = currentTab == tab;
         boolean hovered = isHovered(mouseX, mouseY, x, y, width, tabButtonHeight);
@@ -173,7 +181,8 @@ public class AccountManagerScreen extends Screen {
         }
 
         int textColor = active ? 0xFFFFFFFF : RadiumGuiTheme.blendColors(0xFFCCCCCC, 0xFFFFFFFF, progress);
-        context.drawCenteredTextWithShadow(textRenderer, tab.getName(), x + width / 2, y + (tabButtonHeight - 8) / 2, RadiumGuiTheme.applyAlpha(textColor, animationProgress));
+        context.drawCenteredTextWithShadow(textRenderer, tab.getName(), x + width / 2, y + (tabButtonHeight - 8) / 2,
+                RadiumGuiTheme.applyAlpha(textColor, animationProgress));
     }
 
     private void drawContent(DrawContext context, int mouseX, int mouseY, float animationProgress) {
@@ -188,7 +197,6 @@ public class AccountManagerScreen extends Screen {
         switch (currentTab) {
             case ACCOUNTS -> drawAccountsGrid(context, cx, cy, cw, ch, mouseX, mouseY, animationProgress);
             case ADD_CRACKED -> drawAddCracked(context, cx, cy, cw, ch, mouseX, mouseY, animationProgress);
-            case ADD_MICROSOFT -> drawAddMicrosoft(context, cx, cy, cw, ch, mouseX, mouseY, animationProgress);
         }
     }
 
@@ -221,7 +229,8 @@ public class AccountManagerScreen extends Screen {
             int sbX = x + w - 4;
             int sbH = (int) ((h / (float) totalHeight) * h);
             int sbY = y + (int) ((scrollOffset / (float) (totalHeight - h)) * (h - sbH));
-            RenderUtils.fillRoundRect(context, sbX, sbY, 2, sbH, 1, RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getAccentColor(), anim * 0.5f));
+            RenderUtils.fillRoundRect(context, sbX, sbY, 2, sbH, 1,
+                    RadiumGuiTheme.applyAlpha(RadiumGuiTheme.getAccentColor(), anim * 0.5f));
         }
     }
 
@@ -236,10 +245,12 @@ public class AccountManagerScreen extends Screen {
 
         int baseBg = 0xFF1E1E1E;
         int cardColor = RadiumGuiTheme.blendColors(baseBg, 0xFF2A2A2A, progress);
-        RenderUtils.fillRoundRect(context, x, y, accountCardWidth, accountCardHeight, 6, RadiumGuiTheme.applyAlpha(cardColor, anim * 0.2f));
+        RenderUtils.fillRoundRect(context, x, y, accountCardWidth, accountCardHeight, 6,
+                RadiumGuiTheme.applyAlpha(cardColor, anim * 0.2f));
 
         int borderColor = selected ? RadiumGuiTheme.getAccentColor() : (current ? 0xFF2ECC71 : 0xFF3D3D60);
-        RenderUtils.drawRoundRect(context, x, y, accountCardWidth, accountCardHeight, 6, RadiumGuiTheme.applyAlpha(borderColor, anim * (0.6f + progress * 0.4f)));
+        RenderUtils.drawRoundRect(context, x, y, accountCardWidth, accountCardHeight, 6,
+                RadiumGuiTheme.applyAlpha(borderColor, anim * (0.6f + progress * 0.4f)));
 
         SkinTextures skin = getSkinTextures(acc);
         RenderUtils.drawRoundedPlayerHead(context, skin, x + (accountCardWidth - 20) / 2, y + 5, 20, 4);
@@ -247,13 +258,16 @@ public class AccountManagerScreen extends Screen {
         String name = acc.getUsername();
         if (textRenderer.getWidth(name) > accountCardWidth - 10)
             name = textRenderer.trimToWidth(name, accountCardWidth - 20) + "..";
-        context.drawCenteredTextWithShadow(textRenderer, name, x + accountCardWidth / 2, y + 28, RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim));
+        context.drawCenteredTextWithShadow(textRenderer, name, x + accountCardWidth / 2, y + 28,
+                RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim));
 
         String type = acc.getType().name();
-        context.drawCenteredTextWithShadow(textRenderer, "Â§7" + type, x + accountCardWidth / 2, y + 38, RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim));
+        context.drawCenteredTextWithShadow(textRenderer, "Â§7" + type, x + accountCardWidth / 2, y + 38,
+                RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim));
 
         if (current) {
-            context.drawCenteredTextWithShadow(textRenderer, "Â§aÂ§lCONNECTED", x + accountCardWidth / 2, y + 48, RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim));
+            context.drawCenteredTextWithShadow(textRenderer, "Â§aÂ§lCONNECTED", x + accountCardWidth / 2, y + 48,
+                    RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim));
         }
     }
 
@@ -262,35 +276,27 @@ public class AccountManagerScreen extends Screen {
         int ix = x + (w - iw) / 2;
         int iy = y + 40;
 
-        context.drawCenteredTextWithShadow(textRenderer, "Add Cracked Account", x + w / 2, y + 20, RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim));
+        context.drawCenteredTextWithShadow(textRenderer, "Add Cracked Account", x + w / 2, y + 20,
+                RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim));
 
         int inputBg = RadiumGuiTheme.applyAlpha(crackedNameEditor.isActive() ? 0xFF3A3A3E : 0xFF1A1A1D, anim * 0.4f);
         RenderUtils.fillRoundRect(context, ix, iy, iw, 20, 4, inputBg);
-        RenderUtils.drawRoundRect(context, ix, iy, iw, 20, 4, RadiumGuiTheme.applyAlpha(crackedNameEditor.isActive() ? RadiumGuiTheme.getAccentColor() : 0xFF444444, anim));
+        RenderUtils.drawRoundRect(context, ix, iy, iw, 20, 4, RadiumGuiTheme
+                .applyAlpha(crackedNameEditor.isActive() ? RadiumGuiTheme.getAccentColor() : 0xFF444444, anim));
 
-        String text = crackedNameEditor.getText() + (crackedNameEditor.isActive() && (System.currentTimeMillis() / 500) % 2 == 0 ? "_" : "");
-        if (text.isEmpty() && !crackedNameEditor.isActive()) text = "Â§8Username...";
+        String text = crackedNameEditor.getText()
+                + (crackedNameEditor.isActive() && (System.currentTimeMillis() / 500) % 2 == 0 ? "_" : "");
+        if (text.isEmpty() && !crackedNameEditor.isActive())
+            text = "Â§8Username...";
         context.drawText(textRenderer, text, ix + 5, iy + 6, RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim), false);
 
         int bx = x + (w - 60) / 2;
         int by = iy + 30;
         boolean bh = isHovered(mx, my, bx, by, 60, 18);
-        int bcol = RadiumGuiTheme.applyAlpha(bh ? RadiumGuiTheme.getAccentColor() : RadiumGuiTheme.getAccentColorDark(), anim);
+        int bcol = RadiumGuiTheme.applyAlpha(bh ? RadiumGuiTheme.getAccentColor() : RadiumGuiTheme.getAccentColorDark(),
+                anim);
         RenderUtils.fillRoundRect(context, bx, by, 60, 18, 4, bcol);
         context.drawCenteredTextWithShadow(textRenderer, "Add", bx + 30, by + 5, 0xFFFFFFFF);
-    }
-
-    private void drawAddMicrosoft(DrawContext context, int x, int y, int w, int h, int mx, int my, float anim) {
-        context.drawCenteredTextWithShadow(textRenderer, "Microsoft Authentication", x + w / 2, y + 40, RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim));
-        String info = "Clicking the button below will open your browser";
-        context.drawCenteredTextWithShadow(textRenderer, "Â§7" + info, x + w / 2, y + 60, RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim));
-
-        int bx = x + (w - 100) / 2;
-        int by = y + 90;
-        boolean bh = isHovered(mx, my, bx, by, 100, 24);
-        int bcol = RadiumGuiTheme.applyAlpha(bh ? 0xFF00A4EF : 0xFF0078D4, anim);
-        RenderUtils.fillRoundRect(context, bx, by, 100, 24, 6, bcol);
-        context.drawCenteredTextWithShadow(textRenderer, "Login", bx + 50, by + 8, 0xFFFFFFFF);
     }
 
     private void drawPlayerInfo(DrawContext context, int x, int y, float anim) {
@@ -302,7 +308,6 @@ public class AccountManagerScreen extends Screen {
             name = client.getSession().getUsername();
         }
 
-
         Identifier avatarTexture = getDiscordAvatar();
         boolean avatarDrawn = false;
 
@@ -312,7 +317,6 @@ public class AccountManagerScreen extends Screen {
             RenderUtils.drawRoundTexture(context, avatarTexture, startX, y + 30, avatarSize, avatarSize, 4);
             avatarDrawn = true;
         }
-
 
         if (!avatarDrawn) {
             UUID uuid = client.getSession().getUuidOrNull();
@@ -326,7 +330,8 @@ public class AccountManagerScreen extends Screen {
         int totalW = 20 + 4 + textRenderer.getWidth(shortName);
         int startX = x + (90 - totalW) / 2;
         int nameY = y + 6;
-        context.drawText(textRenderer, shortName, startX + 24, nameY, RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim), false);
+        context.drawText(textRenderer, shortName, startX + 24, nameY, RadiumGuiTheme.applyAlpha(0xFFFFFFFF, anim),
+                false);
 
     }
 
@@ -335,7 +340,6 @@ public class AccountManagerScreen extends Screen {
         if (discordUsername == null || discordUsername.isEmpty()) {
             return null;
         }
-
 
         if (!discordUsername.equals(cachedDiscordUsername)) {
             discordAvatarTexture = null;
@@ -362,14 +366,14 @@ public class AccountManagerScreen extends Screen {
                         apiConnection.setReadTimeout(3000);
 
                         if (apiConnection.getResponseCode() == 200) {
-                            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(apiConnection.getInputStream()));
+                            java.io.BufferedReader reader = new java.io.BufferedReader(
+                                    new java.io.InputStreamReader(apiConnection.getInputStream()));
                             StringBuilder response = new StringBuilder();
                             String line;
                             while ((line = reader.readLine()) != null) {
                                 response.append(line);
                             }
                             reader.close();
-
 
                             String json = response.toString();
                             int avatarIndex = json.indexOf("\"avatar\":\"");
@@ -380,7 +384,8 @@ public class AccountManagerScreen extends Screen {
                                     String avatarHash = json.substring(start, end);
                                     if (avatarHash != null && !avatarHash.isEmpty() && !avatarHash.equals("null")) {
 
-                                        avatarUrl = "https://cdn.discordapp.com/avatars/" + RadiumClient.discordId + "/" + avatarHash + ".png";
+                                        avatarUrl = "https://cdn.discordapp.com/avatars/" + RadiumClient.discordId + "/"
+                                                + avatarHash + ".png";
                                     }
                                 }
                             }
@@ -388,7 +393,6 @@ public class AccountManagerScreen extends Screen {
                     } catch (Exception e) {
 
                     }
-
 
                     if (avatarUrl == null) {
                         long discordIdLong = 0;
@@ -416,11 +420,13 @@ public class AccountManagerScreen extends Screen {
                         NativeImage image = NativeImage.read(inputStream);
                         inputStream.close();
 
-                        Identifier textureId = Identifier.of("radium", "discord/avatar/" + username.toLowerCase().replaceAll("[^a-z0-9]", "_"));
+                        Identifier textureId = Identifier.of("radium",
+                                "discord/avatar/" + username.toLowerCase().replaceAll("[^a-z0-9]", "_"));
 
                         client.execute(() -> {
                             try {
-                                client.getTextureManager().registerTexture(textureId, new NativeImageBackedTexture(image));
+                                client.getTextureManager().registerTexture(textureId,
+                                        new NativeImageBackedTexture(image));
                                 discordAvatarTexture = textureId;
                             } catch (Exception e) {
 
@@ -443,8 +449,10 @@ public class AccountManagerScreen extends Screen {
         int by = windowY + headerHeight + 1 + padding;
         for (SideTab tab : SideTab.values()) {
             if (isHovered(mx, my, bx, by, sidebarWidth - padding, tabButtonHeight)) {
-                if (tab == SideTab.DELETE) deleteAccount();
-                else currentTab = tab;
+                if (tab == SideTab.DELETE)
+                    deleteAccount();
+                else
+                    currentTab = tab;
                 return true;
             }
             by += tabButtonHeight + padding / 2;
@@ -468,8 +476,10 @@ public class AccountManagerScreen extends Screen {
                 if (isHovered(mx, my, tx, ty, accountCardWidth, accountCardHeight)) {
                     Account<?> clicked = accounts.get(i);
                     if (button == 0) {
-                        if (selectedAccount == clicked) loginToAccount(clicked);
-                        else selectedAccount = clicked;
+                        if (selectedAccount == clicked)
+                            loginToAccount(clicked);
+                        else
+                            selectedAccount = clicked;
                     }
                     return true;
                 }
@@ -480,7 +490,8 @@ public class AccountManagerScreen extends Screen {
             if (isHovered(mx, my, ix, iy, 150, 20)) {
                 crackedNameEditor.startEditing(crackedNameEditor.getText());
                 return true;
-            } else crackedNameEditor.stopEditing();
+            } else
+                crackedNameEditor.stopEditing();
 
             int bbx = cx + (cw - 60) / 2;
             int bby = iy + 30;
@@ -488,13 +499,7 @@ public class AccountManagerScreen extends Screen {
                 addCrackedAccount();
                 return true;
             }
-        } else if (currentTab == SideTab.ADD_MICROSOFT) {
-            int bbx = cx + (cw - 100) / 2;
-            int bby = cy + 90;
-            if (isHovered(mx, my, bbx, bby, 100, 24)) {
-                addMicrosoftAccount();
-                return true;
-            }
+
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
@@ -532,8 +537,10 @@ public class AccountManagerScreen extends Screen {
         scrollOffset -= (int) (verticalAmount * 15);
         int cardsPerRow = (windowWidth - sidebarWidth - 2 - padding * 2) / (accountCardWidth + cardPadding);
         cardsPerRow = Math.max(1, cardsPerRow);
-        int totalHeight = (int) Math.ceil(accounts.size() / (double) cardsPerRow) * (accountCardHeight + cardPadding) + padding;
-        scrollOffset = Math.max(0, Math.min(scrollOffset, Math.max(0, totalHeight - (windowHeight - headerHeight - 2))));
+        int totalHeight = (int) Math.ceil(accounts.size() / (double) cardsPerRow) * (accountCardHeight + cardPadding)
+                + padding;
+        scrollOffset = Math.max(0,
+                Math.min(scrollOffset, Math.max(0, totalHeight - (windowHeight - headerHeight - 2))));
         return true;
     }
 
@@ -553,25 +560,6 @@ public class AccountManagerScreen extends Screen {
         }
     }
 
-    private void addMicrosoftAccount() {
-        setStatus("Â§eChecking browser...", 0xFFFF55);
-        MicrosoftLogin.getRefreshToken(token -> {
-            if (token != null) {
-                MicrosoftAccount acc = new MicrosoftAccount(token);
-                if (acc.fetchInfo()) {
-                    RadiumClient.getAccountManager().add(acc);
-                    client.execute(() -> {
-                        refreshAccounts();
-                        setStatus("Â§aAdded MS Account", 0x55FF55);
-                        currentTab = SideTab.ACCOUNTS;
-                    });
-                }
-            } else {
-                client.execute(() -> setStatus("Â§cFailed/Cancelled", 0xFF5555));
-            }
-        });
-    }
-
     private void deleteAccount() {
         if (selectedAccount != null) {
             RadiumClient.getAccountManager().remove(selectedAccount);
@@ -584,7 +572,8 @@ public class AccountManagerScreen extends Screen {
     }
 
     private void loginToAccount(Account<?> account) {
-        if (account == null) return;
+        if (account == null)
+            return;
         setStatus("Â§eLogging in...", 0xFFFF55);
         new Thread(() -> {
             if (account.fetchInfo() && account.login()) {
@@ -633,8 +622,8 @@ public class AccountManagerScreen extends Screen {
     enum SideTab {
         ACCOUNTS("Accounts"),
         ADD_CRACKED("+ Cracked"),
-        ADD_MICROSOFT("+ Microsoft"),
         DELETE("Delete Selected");
+
         private final String name;
 
         SideTab(String name) {
@@ -646,4 +635,3 @@ public class AccountManagerScreen extends Screen {
         }
     }
 }
-
