@@ -245,6 +245,7 @@ public final class RadiumClient {
             moduleManager.register(new com.radium.client.modules.combat.ShieldDisabler());
             moduleManager.register(new com.radium.client.modules.misc.AutoXP());
             moduleManager.register(new com.radium.client.modules.misc.Prevent());
+            moduleManager.register(new com.radium.client.modules.combat.TotemOffhand());
 
             for (com.radium.client.modules.Module module : moduleManager.getModules()) {
                 try {
