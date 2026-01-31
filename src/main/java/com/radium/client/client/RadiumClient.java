@@ -241,6 +241,11 @@ public final class RadiumClient {
             moduleManager.register(new CustomFOV());
             moduleManager.register(new AutoFish());
 
+            // Ported from Argon
+            moduleManager.register(new com.radium.client.modules.combat.ShieldDisabler());
+            moduleManager.register(new com.radium.client.modules.misc.AutoXP());
+            moduleManager.register(new com.radium.client.modules.misc.Prevent());
+
             for (com.radium.client.modules.Module module : moduleManager.getModules()) {
                 try {
                     java.lang.reflect.Field mcField = com.radium.client.modules.Module.class.getDeclaredField("mc");
